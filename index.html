@@ -1,0 +1,1445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SERENITY · El Segundo Meditation</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Josefin+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* Dawn Theme (5am-9am) */
+            --dawn-bg: linear-gradient(180deg, #1a1a3e 0%, #4a3f6b 30%, #8b6b7d 60%, #d4a574 100%);
+            --dawn-accent: #d4a574;
+            --dawn-moon: #f5e6d3;
+
+            /* Day Theme (9am-5pm) */
+            --day-bg: linear-gradient(180deg, #2d4a6f 0%, #5a7a9a 30%, #8ab4c4 60%, #c4d4d4 100%);
+            --day-accent: #c4a484;
+            --day-moon: #f0e8dc;
+
+            /* Dusk Theme (5pm-9pm) */
+            --dusk-bg: linear-gradient(180deg, #1a1a4a 0%, #4a2a5a 30%, #8b4a6a 60%, #c45a3a 100%);
+            --dusk-accent: #c45a3a;
+            --dusk-moon: #e8d8c8;
+
+            /* Night Theme (9pm-5am) */
+            --night-bg: linear-gradient(180deg, #0a0a2a 0%, #1a1a4a 40%, #2a2a5a 70%, #3a2a4a 100%);
+            --night-accent: #6a5acd;
+            --night-moon: #d8d0c0;
+
+            /* Current theme variables */
+            --bg: var(--night-bg);
+            --accent: var(--night-accent);
+            --moon: var(--night-moon);
+            --text: #f5f0e8;
+            --text-muted: rgba(245, 240, 232, 0.6);
+            --gold: #d4af37;
+            --copper: #b87333;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Josefin Sans', sans-serif;
+            background: var(--bg);
+            min-height: 100vh;
+            color: var(--text);
+            overflow-x: hidden;
+            transition: background 2s ease;
+        }
+
+        /* Dithered texture overlay */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 4 4' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='1' cy='1' r='0.5' fill='%23ffffff' opacity='0.03'/%3E%3Ccircle cx='3' cy='3' r='0.5' fill='%23ffffff' opacity='0.03'/%3E%3C/svg%3E");
+            background-size: 4px 4px;
+            pointer-events: none;
+            z-index: 1000;
+        }
+
+        /* Art Deco decorative lines */
+        .deco-line {
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--gold), var(--copper), var(--gold), transparent);
+            margin: 20px 0;
+        }
+
+        .deco-line.thin {
+            height: 1px;
+            opacity: 0.5;
+        }
+
+        /* Header */
+        header {
+            text-align: center;
+            padding: 30px 20px 10px;
+            position: relative;
+        }
+
+        .logo {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(2rem, 5vw, 3.5rem);
+            font-weight: 700;
+            letter-spacing: 0.3em;
+            background: linear-gradient(135deg, var(--gold), var(--copper), var(--gold));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 0 60px rgba(212, 175, 55, 0.3);
+        }
+
+        .tagline {
+            font-size: 0.85rem;
+            letter-spacing: 0.4em;
+            color: var(--text-muted);
+            margin-top: 5px;
+            text-transform: uppercase;
+        }
+
+        .time-period {
+            display: inline-block;
+            padding: 5px 20px;
+            border: 1px solid var(--accent);
+            border-radius: 20px;
+            font-size: 0.75rem;
+            letter-spacing: 0.2em;
+            margin-top: 15px;
+            color: var(--accent);
+            text-transform: uppercase;
+        }
+
+        /* Money Counter */
+        .money-counter {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, rgba(212, 175, 55, 0.2), rgba(184, 115, 51, 0.2));
+            border: 1px solid var(--gold);
+            border-radius: 10px;
+            padding: 15px 25px;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+        }
+
+        .money-label {
+            font-size: 0.65rem;
+            letter-spacing: 0.3em;
+            color: var(--gold);
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+
+        .money-amount {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.5rem;
+            color: var(--gold);
+            font-weight: 600;
+        }
+
+        .money-rate {
+            font-size: 0.6rem;
+            color: var(--text-muted);
+            margin-top: 3px;
+        }
+
+        /* Main Container */
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 0 20px 100px;
+        }
+
+        /* Breathing Circle */
+        .breath-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 30px 0;
+            position: relative;
+        }
+
+        .breath-circle {
+            width: 220px;
+            height: 220px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, var(--moon), rgba(200, 190, 170, 0.8));
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            position: relative;
+            box-shadow:
+                0 0 60px rgba(245, 230, 211, 0.3),
+                0 0 120px rgba(245, 230, 211, 0.1),
+                inset 0 0 60px rgba(0, 0, 0, 0.1);
+            transition: transform 4s ease-in-out, box-shadow 0.5s ease;
+            cursor: pointer;
+        }
+
+        .breath-circle.inhale {
+            transform: scale(1.2);
+            box-shadow:
+                0 0 80px rgba(245, 230, 211, 0.5),
+                0 0 160px rgba(245, 230, 211, 0.2),
+                inset 0 0 60px rgba(0, 0, 0, 0.05);
+        }
+
+        .breath-circle.exhale {
+            transform: scale(0.9);
+        }
+
+        .breath-circle.hold {
+            box-shadow:
+                0 0 100px rgba(212, 175, 55, 0.4),
+                0 0 200px rgba(212, 175, 55, 0.2),
+                inset 0 0 60px rgba(0, 0, 0, 0.1);
+        }
+
+        .breath-text {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.3rem;
+            color: #2a2a4a;
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+        }
+
+        .breath-timer {
+            font-size: 2.5rem;
+            font-weight: 300;
+            color: #3a3a5a;
+            margin-top: 5px;
+        }
+
+        .breath-instruction {
+            font-size: 0.7rem;
+            color: #5a5a7a;
+            margin-top: 10px;
+            letter-spacing: 0.15em;
+        }
+
+        /* Rings around breath circle */
+        .breath-ring {
+            position: absolute;
+            border-radius: 50%;
+            border: 1px solid var(--accent);
+            opacity: 0.3;
+            pointer-events: none;
+        }
+
+        .breath-ring:nth-child(1) {
+            width: 260px;
+            height: 260px;
+        }
+
+        .breath-ring:nth-child(2) {
+            width: 300px;
+            height: 300px;
+            opacity: 0.2;
+        }
+
+        .breath-ring:nth-child(3) {
+            width: 340px;
+            height: 340px;
+            opacity: 0.1;
+        }
+
+        /* Session Stats */
+        .session-stats {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin: 20px 0;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.8rem;
+            color: var(--accent);
+        }
+
+        .stat-label {
+            font-size: 0.65rem;
+            letter-spacing: 0.2em;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            margin-top: 5px;
+        }
+
+        /* Breathing Mode Selector */
+        .mode-section {
+            margin: 30px 0;
+        }
+
+        .section-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.1rem;
+            letter-spacing: 0.15em;
+            text-align: center;
+            margin-bottom: 20px;
+            color: var(--text);
+        }
+
+        .mode-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        .mode-card {
+            background: linear-gradient(135deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02));
+            border: 1px solid rgba(212, 175, 55, 0.3);
+            border-radius: 12px;
+            padding: 20px 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .mode-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--gold), var(--copper));
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+
+        .mode-card:hover, .mode-card.active {
+            background: linear-gradient(135deg, rgba(212, 175, 55, 0.15), rgba(184, 115, 51, 0.1));
+            border-color: var(--gold);
+            transform: translateY(-2px);
+        }
+
+        .mode-card:hover::before, .mode-card.active::before {
+            transform: scaleX(1);
+        }
+
+        .mode-icon {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+        }
+
+        .mode-name {
+            font-family: 'Playfair Display', serif;
+            font-size: 0.95rem;
+            margin-bottom: 5px;
+        }
+
+        .mode-timing {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            letter-spacing: 0.1em;
+        }
+
+        .mode-benefit {
+            font-size: 0.6rem;
+            color: var(--accent);
+            margin-top: 8px;
+            font-style: italic;
+        }
+
+        /* Affirmation Card */
+        .affirmation-card {
+            background: linear-gradient(135deg, rgba(106, 90, 205, 0.2), rgba(212, 175, 55, 0.1));
+            border: 1px solid rgba(212, 175, 55, 0.4);
+            border-radius: 15px;
+            padding: 25px;
+            margin: 30px 0;
+            text-align: center;
+            position: relative;
+        }
+
+        .affirmation-card::before,
+        .affirmation-card::after {
+            content: '✦';
+            position: absolute;
+            color: var(--gold);
+            font-size: 1.2rem;
+        }
+
+        .affirmation-card::before {
+            top: 10px;
+            left: 15px;
+        }
+
+        .affirmation-card::after {
+            bottom: 10px;
+            right: 15px;
+        }
+
+        .affirmation-label {
+            font-size: 0.6rem;
+            letter-spacing: 0.4em;
+            color: var(--gold);
+            text-transform: uppercase;
+            margin-bottom: 15px;
+        }
+
+        .affirmation-text {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.2rem;
+            line-height: 1.6;
+            color: var(--text);
+            font-style: italic;
+        }
+
+        .affirmation-refresh {
+            background: none;
+            border: 1px solid var(--accent);
+            color: var(--accent);
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            letter-spacing: 0.15em;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+            font-family: 'Josefin Sans', sans-serif;
+        }
+
+        .affirmation-refresh:hover {
+            background: var(--accent);
+            color: #1a1a2e;
+        }
+
+        /* Feature 1: Cosmic Achievement System */
+        .cosmic-section {
+            margin: 30px 0;
+        }
+
+        .constellation-display {
+            background: linear-gradient(180deg, rgba(10, 10, 42, 0.8), rgba(26, 26, 74, 0.6));
+            border: 1px solid rgba(106, 90, 205, 0.4);
+            border-radius: 15px;
+            padding: 25px;
+            position: relative;
+            overflow: hidden;
+            min-height: 180px;
+        }
+
+        .stars-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .star {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: var(--gold);
+            border-radius: 50%;
+            box-shadow: 0 0 10px var(--gold);
+            opacity: 0.3;
+            transition: opacity 0.5s ease, transform 0.5s ease;
+        }
+
+        .star.earned {
+            opacity: 1;
+            animation: starPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes starPulse {
+            0%, 100% { transform: scale(1); box-shadow: 0 0 10px var(--gold); }
+            50% { transform: scale(1.3); box-shadow: 0 0 20px var(--gold); }
+        }
+
+        .constellation-line {
+            position: absolute;
+            background: var(--gold);
+            height: 1px;
+            transform-origin: left center;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        .constellation-line.visible {
+            opacity: 0.6;
+        }
+
+        .constellation-info {
+            position: relative;
+            z-index: 10;
+            text-align: center;
+        }
+
+        .constellation-name {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.1rem;
+            color: var(--gold);
+            margin-bottom: 5px;
+        }
+
+        .constellation-progress {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            letter-spacing: 0.1em;
+        }
+
+        .streak-counter {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .streak-flame {
+            font-size: 1.5rem;
+        }
+
+        .streak-value {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.3rem;
+            color: var(--copper);
+        }
+
+        .streak-label {
+            font-size: 0.65rem;
+            color: var(--text-muted);
+            letter-spacing: 0.15em;
+        }
+
+        /* Feature 2: Biometric Harmony Visualizer */
+        .harmony-section {
+            margin: 30px 0;
+        }
+
+        .harmony-visualizer {
+            background: linear-gradient(135deg, rgba(139, 75, 106, 0.2), rgba(74, 42, 90, 0.3));
+            border: 1px solid rgba(196, 90, 58, 0.4);
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+        }
+
+        .harmony-wave {
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 3px;
+            margin: 15px 0;
+        }
+
+        .wave-bar {
+            width: 4px;
+            background: linear-gradient(180deg, var(--accent), var(--copper));
+            border-radius: 2px;
+            transition: height 0.1s ease;
+        }
+
+        .harmony-score {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .harmony-value {
+            font-family: 'Playfair Display', serif;
+            font-size: 2rem;
+            color: var(--accent);
+        }
+
+        .harmony-label {
+            font-size: 0.65rem;
+            color: var(--text-muted);
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+        }
+
+        .harmony-status {
+            font-size: 0.75rem;
+            color: var(--copper);
+            font-style: italic;
+            margin-top: 10px;
+        }
+
+        /* Control Buttons */
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 25px 0;
+        }
+
+        .btn {
+            font-family: 'Josefin Sans', sans-serif;
+            padding: 15px 40px;
+            border-radius: 30px;
+            font-size: 0.8rem;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--gold), var(--copper));
+            border: none;
+            color: #1a1a2e;
+            font-weight: 500;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(212, 175, 55, 0.3);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            border: 1px solid var(--accent);
+            color: var(--accent);
+        }
+
+        .btn-secondary:hover {
+            background: var(--accent);
+            color: #1a1a2e;
+        }
+
+        /* Landscape Decoration */
+        .landscape {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 200px;
+            pointer-events: none;
+            z-index: -1;
+            opacity: 0.4;
+        }
+
+        .mountain {
+            position: absolute;
+            bottom: 0;
+            width: 0;
+            height: 0;
+            border-style: solid;
+        }
+
+        .mountain-1 {
+            left: 5%;
+            border-width: 0 80px 120px 80px;
+            border-color: transparent transparent #4a3f6b transparent;
+        }
+
+        .mountain-2 {
+            left: 25%;
+            border-width: 0 120px 180px 120px;
+            border-color: transparent transparent #8b6b7d transparent;
+        }
+
+        .mountain-3 {
+            right: 10%;
+            border-width: 0 100px 150px 100px;
+            border-color: transparent transparent #5a4a6b transparent;
+        }
+
+        .tree {
+            position: absolute;
+            bottom: 0;
+            width: 30px;
+            height: 80px;
+            background: linear-gradient(180deg, #2a4a3a, #1a3a2a);
+            clip-path: polygon(50% 0%, 100% 100%, 0% 100%);
+        }
+
+        .tree-1 { left: 15%; height: 60px; }
+        .tree-2 { left: 20%; height: 90px; }
+        .tree-3 { right: 25%; height: 75px; }
+        .tree-4 { right: 15%; height: 95px; }
+
+        /* Notifications */
+        .notification {
+            position: fixed;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: linear-gradient(135deg, var(--gold), var(--copper));
+            color: #1a1a2e;
+            padding: 15px 30px;
+            border-radius: 30px;
+            font-size: 0.8rem;
+            letter-spacing: 0.1em;
+            opacity: 0;
+            transition: all 0.5s ease;
+            z-index: 1000;
+        }
+
+        .notification.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+
+        /* Responsive */
+        @media (max-width: 480px) {
+            .money-counter {
+                top: 10px;
+                right: 10px;
+                padding: 10px 15px;
+            }
+
+            .money-amount {
+                font-size: 1.2rem;
+            }
+
+            .mode-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .session-stats {
+                gap: 20px;
+            }
+
+            .breath-circle {
+                width: 180px;
+                height: 180px;
+            }
+        }
+
+        /* Sound toggle */
+        .sound-toggle {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid var(--accent);
+            color: var(--accent);
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 100;
+        }
+
+        .sound-toggle:hover {
+            background: var(--accent);
+            color: #1a1a2e;
+        }
+    </style>
+</head>
+<body>
+    <!-- Money Counter -->
+    <div class="money-counter">
+        <div class="money-label">Wealth Manifesting</div>
+        <div class="money-amount">$<span id="moneyValue">0.00</span></div>
+        <div class="money-rate">+$0.17/breath cycle</div>
+    </div>
+
+    <!-- Sound Toggle -->
+    <button class="sound-toggle" id="soundToggle" title="Toggle Sound">
+        🔔
+    </button>
+
+    <!-- Header -->
+    <header>
+        <h1 class="logo">SERENITY</h1>
+        <p class="tagline">El Segundo · Est. 2025</p>
+        <div class="time-period" id="timePeriod">Evening Meditation</div>
+    </header>
+
+    <div class="deco-line"></div>
+
+    <div class="container">
+        <!-- Breathing Circle -->
+        <div class="breath-container">
+            <div class="breath-ring"></div>
+            <div class="breath-ring"></div>
+            <div class="breath-ring"></div>
+            <div class="breath-circle" id="breathCircle">
+                <span class="breath-text" id="breathText">TAP TO BEGIN</span>
+                <span class="breath-timer" id="breathTimer">—</span>
+                <span class="breath-instruction" id="breathInstruction">Your journey awaits</span>
+            </div>
+        </div>
+
+        <!-- Session Stats -->
+        <div class="session-stats">
+            <div class="stat">
+                <div class="stat-value" id="cyclesCount">0</div>
+                <div class="stat-label">Cycles</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value" id="totalMinutes">0:00</div>
+                <div class="stat-label">Total Time</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value" id="breathsToday">0</div>
+                <div class="stat-label">Today</div>
+            </div>
+        </div>
+
+        <div class="deco-line thin"></div>
+
+        <!-- Affirmation Card -->
+        <div class="affirmation-card">
+            <div class="affirmation-label">✦ Daily Wisdom ✦</div>
+            <p class="affirmation-text" id="affirmationText">
+                "Your breath is the bridge between your body and your dreams."
+            </p>
+            <button class="affirmation-refresh" id="newAffirmation">New Inspiration</button>
+        </div>
+
+        <!-- Breathing Modes -->
+        <div class="mode-section">
+            <h2 class="section-title">✦ Choose Your Practice ✦</h2>
+            <div class="mode-grid">
+                <div class="mode-card active" data-mode="calm">
+                    <div class="mode-icon">🌙</div>
+                    <div class="mode-name">Calm</div>
+                    <div class="mode-timing">4-7-8</div>
+                    <div class="mode-benefit">Deep relaxation</div>
+                </div>
+                <div class="mode-card" data-mode="box">
+                    <div class="mode-icon">◇</div>
+                    <div class="mode-name">Box Breath</div>
+                    <div class="mode-timing">4-4-4-4</div>
+                    <div class="mode-benefit">Mental clarity</div>
+                </div>
+                <div class="mode-card" data-mode="energy">
+                    <div class="mode-icon">☀️</div>
+                    <div class="mode-name">Energize</div>
+                    <div class="mode-timing">2-1-4-0</div>
+                    <div class="mode-benefit">Vitality boost</div>
+                </div>
+                <div class="mode-card" data-mode="focus">
+                    <div class="mode-icon">◎</div>
+                    <div class="mode-name">Focus</div>
+                    <div class="mode-timing">5-2-5-2</div>
+                    <div class="mode-benefit">Concentration</div>
+                </div>
+                <div class="mode-card" data-mode="sleep">
+                    <div class="mode-icon">✧</div>
+                    <div class="mode-name">Sleep</div>
+                    <div class="mode-timing">4-8-8-0</div>
+                    <div class="mode-benefit">Restful slumber</div>
+                </div>
+                <div class="mode-card" data-mode="anxiety">
+                    <div class="mode-icon">🍃</div>
+                    <div class="mode-name">Relief</div>
+                    <div class="mode-timing">6-3-6-3</div>
+                    <div class="mode-benefit">Anxiety ease</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="btn btn-primary" id="startBtn">Begin Session</button>
+            <button class="btn btn-secondary" id="resetBtn">Reset</button>
+        </div>
+
+        <div class="deco-line thin"></div>
+
+        <!-- Feature 1: Cosmic Achievement System -->
+        <div class="cosmic-section">
+            <h2 class="section-title">✦ Cosmic Journey ✦</h2>
+            <div class="constellation-display">
+                <div class="stars-container" id="starsContainer"></div>
+                <div class="constellation-info">
+                    <div class="constellation-name" id="constellationName">The Seeker</div>
+                    <div class="constellation-progress" id="constellationProgress">3/7 stars collected</div>
+                    <div class="streak-counter">
+                        <span class="streak-flame">🔥</span>
+                        <div>
+                            <div class="streak-value" id="streakValue">1</div>
+                            <div class="streak-label">Day Streak</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="deco-line thin"></div>
+
+        <!-- Feature 2: Biometric Harmony Visualizer -->
+        <div class="harmony-section">
+            <h2 class="section-title">✦ Harmony Index ✦</h2>
+            <div class="harmony-visualizer">
+                <div class="harmony-label">Breath Coherence</div>
+                <div class="harmony-wave" id="harmonyWave"></div>
+                <div class="harmony-score">
+                    <div>
+                        <div class="harmony-value" id="harmonyValue">0</div>
+                        <div class="harmony-label">Coherence Score</div>
+                    </div>
+                </div>
+                <div class="harmony-status" id="harmonyStatus">Begin breathing to measure harmony</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Landscape decoration -->
+    <div class="landscape">
+        <div class="mountain mountain-1"></div>
+        <div class="mountain mountain-2"></div>
+        <div class="mountain mountain-3"></div>
+        <div class="tree tree-1"></div>
+        <div class="tree tree-2"></div>
+        <div class="tree tree-3"></div>
+        <div class="tree tree-4"></div>
+    </div>
+
+    <!-- Notification -->
+    <div class="notification" id="notification"></div>
+
+    <script>
+        // ============================================
+        // SERENITY - El Segundo Meditation App
+        // Art Deco 2025 Edition
+        // ============================================
+
+        // State
+        const state = {
+            isRunning: false,
+            currentPhase: 'idle', // idle, inhale, hold1, exhale, hold2
+            phaseTime: 0,
+            totalTime: 0,
+            cycles: 0,
+            breathsToday: parseInt(localStorage.getItem('breathsToday') || '0'),
+            lastBreathDate: localStorage.getItem('lastBreathDate'),
+            money: parseFloat(localStorage.getItem('totalMoney') || '0'),
+            streak: parseInt(localStorage.getItem('streak') || '1'),
+            starsEarned: parseInt(localStorage.getItem('starsEarned') || '3'),
+            soundEnabled: localStorage.getItem('soundEnabled') !== 'false',
+            harmonyScore: 0,
+            currentMode: 'calm'
+        };
+
+        // Breathing patterns: [inhale, hold1, exhale, hold2]
+        const breathingModes = {
+            calm: { pattern: [4, 7, 8, 0], name: 'Calm' },
+            box: { pattern: [4, 4, 4, 4], name: 'Box Breath' },
+            energy: { pattern: [2, 1, 4, 0], name: 'Energize' },
+            focus: { pattern: [5, 2, 5, 2], name: 'Focus' },
+            sleep: { pattern: [4, 8, 8, 0], name: 'Sleep' },
+            anxiety: { pattern: [6, 3, 6, 3], name: 'Relief' }
+        };
+
+        // Time-based affirmations
+        const affirmations = {
+            dawn: [
+                "Each sunrise brings fresh possibilities waiting to unfold.",
+                "The morning light carries your intentions into reality.",
+                "You are the architect of this beautiful day.",
+                "Rise like the sun—steady, warm, and full of purpose.",
+                "New beginnings are your specialty; today proves it."
+            ],
+            day: [
+                "Your focused energy creates ripples of positive change.",
+                "Every task you complete builds your empire of accomplishment.",
+                "You navigate challenges like water flows—gracefully and persistently.",
+                "Productivity is your natural state; watch yourself flourish.",
+                "The universe conspires to support your midday momentum."
+            ],
+            dusk: [
+                "As the sun sets, acknowledge all you've created today.",
+                "You've earned this peaceful transition into evening.",
+                "The golden hour reflects your inner radiance.",
+                "Release the day's weight; you've carried it beautifully.",
+                "Twilight whispers: you are exactly where you need to be."
+            ],
+            night: [
+                "The stars above mirror the light within you.",
+                "Rest is not retreat—it's preparation for tomorrow's victories.",
+                "Your dreams tonight plant seeds for tomorrow's reality.",
+                "In stillness, your soul recalibrates for greatness.",
+                "The moon watches over your well-deserved peace."
+            ]
+        };
+
+        // Constellation data
+        const constellations = [
+            { name: "The Seeker", stars: 7 },
+            { name: "The Dreamer", stars: 9 },
+            { name: "The Creator", stars: 12 },
+            { name: "The Sage", stars: 15 },
+            { name: "The Luminary", stars: 20 }
+        ];
+
+        // DOM Elements
+        const elements = {
+            breathCircle: document.getElementById('breathCircle'),
+            breathText: document.getElementById('breathText'),
+            breathTimer: document.getElementById('breathTimer'),
+            breathInstruction: document.getElementById('breathInstruction'),
+            cyclesCount: document.getElementById('cyclesCount'),
+            totalMinutes: document.getElementById('totalMinutes'),
+            breathsToday: document.getElementById('breathsToday'),
+            moneyValue: document.getElementById('moneyValue'),
+            timePeriod: document.getElementById('timePeriod'),
+            affirmationText: document.getElementById('affirmationText'),
+            startBtn: document.getElementById('startBtn'),
+            resetBtn: document.getElementById('resetBtn'),
+            newAffirmation: document.getElementById('newAffirmation'),
+            soundToggle: document.getElementById('soundToggle'),
+            starsContainer: document.getElementById('starsContainer'),
+            constellationName: document.getElementById('constellationName'),
+            constellationProgress: document.getElementById('constellationProgress'),
+            streakValue: document.getElementById('streakValue'),
+            harmonyWave: document.getElementById('harmonyWave'),
+            harmonyValue: document.getElementById('harmonyValue'),
+            harmonyStatus: document.getElementById('harmonyStatus'),
+            notification: document.getElementById('notification')
+        };
+
+        // Get time period
+        function getTimePeriod() {
+            const hour = new Date().getHours();
+            if (hour >= 5 && hour < 9) return 'dawn';
+            if (hour >= 9 && hour < 17) return 'day';
+            if (hour >= 17 && hour < 21) return 'dusk';
+            return 'night';
+        }
+
+        // Update theme based on time
+        function updateTheme() {
+            const period = getTimePeriod();
+            const root = document.documentElement;
+            const body = document.body;
+
+            const themes = {
+                dawn: {
+                    bg: 'linear-gradient(180deg, #1a1a3e 0%, #4a3f6b 30%, #8b6b7d 60%, #d4a574 100%)',
+                    accent: '#d4a574',
+                    moon: '#f5e6d3',
+                    label: 'Dawn Awakening'
+                },
+                day: {
+                    bg: 'linear-gradient(180deg, #2d4a6f 0%, #5a7a9a 30%, #8ab4c4 60%, #c4d4d4 100%)',
+                    accent: '#c4a484',
+                    moon: '#f0e8dc',
+                    label: 'Midday Clarity'
+                },
+                dusk: {
+                    bg: 'linear-gradient(180deg, #1a1a4a 0%, #4a2a5a 30%, #8b4a6a 60%, #c45a3a 100%)',
+                    accent: '#c45a3a',
+                    moon: '#e8d8c8',
+                    label: 'Golden Hour'
+                },
+                night: {
+                    bg: 'linear-gradient(180deg, #0a0a2a 0%, #1a1a4a 40%, #2a2a5a 70%, #3a2a4a 100%)',
+                    accent: '#6a5acd',
+                    moon: '#d8d0c0',
+                    label: 'Night Reflection'
+                }
+            };
+
+            const theme = themes[period];
+            root.style.setProperty('--bg', theme.bg);
+            root.style.setProperty('--accent', theme.accent);
+            root.style.setProperty('--moon', theme.moon);
+            body.style.background = theme.bg;
+            elements.timePeriod.textContent = theme.label;
+
+            // Suggest appropriate breathing mode
+            const recommendedModes = {
+                dawn: 'energy',
+                day: 'focus',
+                dusk: 'calm',
+                night: 'sleep'
+            };
+
+            // Visual indicator for recommended mode
+            document.querySelectorAll('.mode-card').forEach(card => {
+                card.style.outline = card.dataset.mode === recommendedModes[period]
+                    ? '2px solid var(--gold)'
+                    : 'none';
+            });
+        }
+
+        // Money counter
+        function updateMoney(amount = 0.001) {
+            state.money += amount;
+            localStorage.setItem('totalMoney', state.money.toString());
+            elements.moneyValue.textContent = state.money.toFixed(2);
+        }
+
+        // Initialize money counter animation
+        function startMoneyCounter() {
+            // Passive earnings even when not breathing
+            setInterval(() => {
+                updateMoney(0.001);
+            }, 1000);
+        }
+
+        // Affirmations
+        function getAffirmation() {
+            const period = getTimePeriod();
+            const periodAffirmations = affirmations[period];
+            return periodAffirmations[Math.floor(Math.random() * periodAffirmations.length)];
+        }
+
+        function updateAffirmation() {
+            elements.affirmationText.style.opacity = '0';
+            setTimeout(() => {
+                elements.affirmationText.textContent = `"${getAffirmation()}"`;
+                elements.affirmationText.style.opacity = '1';
+            }, 300);
+        }
+
+        // Breathing animation
+        function startBreathing() {
+            if (state.isRunning) return;
+
+            state.isRunning = true;
+            state.currentPhase = 'inhale';
+            state.phaseTime = 0;
+            elements.startBtn.textContent = 'Pause';
+
+            runBreathingCycle();
+        }
+
+        function stopBreathing() {
+            state.isRunning = false;
+            state.currentPhase = 'idle';
+            elements.startBtn.textContent = 'Resume';
+            elements.breathCircle.className = 'breath-circle';
+            elements.breathText.textContent = 'PAUSED';
+            elements.breathTimer.textContent = '—';
+            elements.breathInstruction.textContent = 'Tap to continue';
+        }
+
+        function runBreathingCycle() {
+            if (!state.isRunning) return;
+
+            const pattern = breathingModes[state.currentMode].pattern;
+            const phases = ['inhale', 'hold1', 'exhale', 'hold2'];
+            const phaseNames = ['BREATHE IN', 'HOLD', 'BREATHE OUT', 'HOLD'];
+            const phaseInstructions = [
+                'Fill your lungs with peace',
+                'Let stillness embrace you',
+                'Release all tension',
+                'Find your center'
+            ];
+
+            const currentIndex = phases.indexOf(state.currentPhase);
+            const phaseDuration = pattern[currentIndex];
+
+            // Skip if phase duration is 0
+            if (phaseDuration === 0) {
+                state.currentPhase = phases[(currentIndex + 1) % 4];
+                if (state.currentPhase === 'inhale') {
+                    completeCycle();
+                }
+                runBreathingCycle();
+                return;
+            }
+
+            // Update UI
+            elements.breathText.textContent = phaseNames[currentIndex];
+            elements.breathTimer.textContent = phaseDuration - state.phaseTime;
+            elements.breathInstruction.textContent = phaseInstructions[currentIndex];
+
+            // Update circle animation
+            elements.breathCircle.className = 'breath-circle';
+            if (state.currentPhase === 'inhale') {
+                elements.breathCircle.classList.add('inhale');
+            } else if (state.currentPhase === 'exhale') {
+                elements.breathCircle.classList.add('exhale');
+            } else {
+                elements.breathCircle.classList.add('hold');
+            }
+
+            // Update harmony wave
+            updateHarmonyWave();
+
+            state.phaseTime++;
+            state.totalTime++;
+
+            // Update total time display
+            const minutes = Math.floor(state.totalTime / 60);
+            const seconds = state.totalTime % 60;
+            elements.totalMinutes.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+
+            if (state.phaseTime >= phaseDuration) {
+                state.phaseTime = 0;
+                const nextIndex = (currentIndex + 1) % 4;
+                state.currentPhase = phases[nextIndex];
+
+                if (state.currentPhase === 'inhale') {
+                    completeCycle();
+                }
+            }
+
+            setTimeout(runBreathingCycle, 1000);
+        }
+
+        function completeCycle() {
+            state.cycles++;
+            state.breathsToday++;
+            elements.cyclesCount.textContent = state.cycles;
+            elements.breathsToday.textContent = state.breathsToday;
+
+            // Add money for completing cycle
+            updateMoney(0.17);
+
+            // Update harmony score
+            state.harmonyScore = Math.min(100, state.harmonyScore + Math.floor(Math.random() * 5) + 3);
+            elements.harmonyValue.textContent = state.harmonyScore;
+            updateHarmonyStatus();
+
+            // Check for star earning
+            if (state.cycles % 3 === 0) {
+                earnStar();
+            }
+
+            // Save to localStorage
+            const today = new Date().toDateString();
+            localStorage.setItem('breathsToday', state.breathsToday.toString());
+            localStorage.setItem('lastBreathDate', today);
+
+            // Update streak if new day
+            if (state.lastBreathDate !== today) {
+                const yesterday = new Date();
+                yesterday.setDate(yesterday.getDate() - 1);
+                if (state.lastBreathDate === yesterday.toDateString()) {
+                    state.streak++;
+                } else if (state.lastBreathDate !== today) {
+                    state.streak = 1;
+                }
+                localStorage.setItem('streak', state.streak.toString());
+                elements.streakValue.textContent = state.streak;
+            }
+        }
+
+        // Harmony wave visualization
+        function initHarmonyWave() {
+            elements.harmonyWave.innerHTML = '';
+            for (let i = 0; i < 40; i++) {
+                const bar = document.createElement('div');
+                bar.className = 'wave-bar';
+                bar.style.height = '5px';
+                elements.harmonyWave.appendChild(bar);
+            }
+        }
+
+        function updateHarmonyWave() {
+            const bars = elements.harmonyWave.querySelectorAll('.wave-bar');
+            bars.forEach((bar, i) => {
+                const baseHeight = 5;
+                const maxHeight = 60;
+                const phase = state.currentPhase;
+                let height;
+
+                if (phase === 'inhale') {
+                    const wave = Math.sin((i / 40) * Math.PI * 4 + Date.now() / 200);
+                    height = baseHeight + (wave + 1) * 0.5 * (maxHeight - baseHeight) * (state.phaseTime / 4);
+                } else if (phase === 'exhale') {
+                    const wave = Math.sin((i / 40) * Math.PI * 4 + Date.now() / 300);
+                    height = baseHeight + (wave + 1) * 0.3 * (maxHeight - baseHeight);
+                } else if (phase === 'hold1' || phase === 'hold2') {
+                    const wave = Math.sin((i / 40) * Math.PI * 2 + Date.now() / 500);
+                    height = baseHeight + (wave + 1) * 0.4 * (maxHeight - baseHeight);
+                } else {
+                    height = baseHeight + Math.random() * 10;
+                }
+
+                bar.style.height = `${height}px`;
+            });
+        }
+
+        function updateHarmonyStatus() {
+            let status;
+            if (state.harmonyScore < 20) {
+                status = 'Beginning to sync...';
+            } else if (state.harmonyScore < 40) {
+                status = 'Finding your rhythm';
+            } else if (state.harmonyScore < 60) {
+                status = 'Coherence developing';
+            } else if (state.harmonyScore < 80) {
+                status = 'Harmonious flow achieved';
+            } else {
+                status = 'Peak coherence · Transcendent state';
+            }
+            elements.harmonyStatus.textContent = status;
+        }
+
+        // Cosmic Achievement System
+        function initStars() {
+            elements.starsContainer.innerHTML = '';
+            const currentConstellation = getCurrentConstellation();
+
+            for (let i = 0; i < currentConstellation.stars; i++) {
+                const star = document.createElement('div');
+                star.className = 'star' + (i < state.starsEarned % currentConstellation.stars ? ' earned' : '');
+                star.style.left = `${10 + Math.random() * 80}%`;
+                star.style.top = `${10 + Math.random() * 60}%`;
+                elements.starsContainer.appendChild(star);
+            }
+
+            elements.constellationName.textContent = currentConstellation.name;
+            const starsInConstellation = state.starsEarned % currentConstellation.stars ||
+                                         (state.starsEarned >= currentConstellation.stars ? currentConstellation.stars : 0);
+            elements.constellationProgress.textContent = `${starsInConstellation}/${currentConstellation.stars} stars collected`;
+        }
+
+        function getCurrentConstellation() {
+            let totalStars = 0;
+            for (const constellation of constellations) {
+                totalStars += constellation.stars;
+                if (state.starsEarned < totalStars) {
+                    return constellation;
+                }
+            }
+            return constellations[constellations.length - 1];
+        }
+
+        function earnStar() {
+            state.starsEarned++;
+            localStorage.setItem('starsEarned', state.starsEarned.toString());
+            initStars();
+            showNotification('✨ New star earned! Your cosmic journey continues.');
+        }
+
+        // Notifications
+        function showNotification(message) {
+            elements.notification.textContent = message;
+            elements.notification.classList.add('show');
+            setTimeout(() => {
+                elements.notification.classList.remove('show');
+            }, 3000);
+        }
+
+        // Mode selection
+        function selectMode(mode) {
+            state.currentMode = mode;
+            document.querySelectorAll('.mode-card').forEach(card => {
+                card.classList.toggle('active', card.dataset.mode === mode);
+            });
+
+            if (state.isRunning) {
+                state.phaseTime = 0;
+                state.currentPhase = 'inhale';
+            }
+        }
+
+        // Reset session
+        function resetSession() {
+            state.isRunning = false;
+            state.currentPhase = 'idle';
+            state.phaseTime = 0;
+            state.totalTime = 0;
+            state.cycles = 0;
+            state.harmonyScore = 0;
+
+            elements.cyclesCount.textContent = '0';
+            elements.totalMinutes.textContent = '0:00';
+            elements.harmonyValue.textContent = '0';
+            elements.harmonyStatus.textContent = 'Begin breathing to measure harmony';
+            elements.startBtn.textContent = 'Begin Session';
+            elements.breathCircle.className = 'breath-circle';
+            elements.breathText.textContent = 'TAP TO BEGIN';
+            elements.breathTimer.textContent = '—';
+            elements.breathInstruction.textContent = 'Your journey awaits';
+
+            initHarmonyWave();
+        }
+
+        // Event Listeners
+        elements.startBtn.addEventListener('click', () => {
+            if (state.isRunning) {
+                stopBreathing();
+            } else {
+                startBreathing();
+            }
+        });
+
+        elements.breathCircle.addEventListener('click', () => {
+            if (state.isRunning) {
+                stopBreathing();
+            } else {
+                startBreathing();
+            }
+        });
+
+        elements.resetBtn.addEventListener('click', resetSession);
+
+        elements.newAffirmation.addEventListener('click', updateAffirmation);
+
+        elements.soundToggle.addEventListener('click', () => {
+            state.soundEnabled = !state.soundEnabled;
+            localStorage.setItem('soundEnabled', state.soundEnabled.toString());
+            elements.soundToggle.textContent = state.soundEnabled ? '🔔' : '🔕';
+        });
+
+        document.querySelectorAll('.mode-card').forEach(card => {
+            card.addEventListener('click', () => selectMode(card.dataset.mode));
+        });
+
+        // Check for new day and reset daily stats
+        function checkDayReset() {
+            const today = new Date().toDateString();
+            if (state.lastBreathDate && state.lastBreathDate !== today) {
+                state.breathsToday = 0;
+                localStorage.setItem('breathsToday', '0');
+            }
+            state.lastBreathDate = today;
+        }
+
+        // Initialize
+        function init() {
+            checkDayReset();
+            updateTheme();
+            updateAffirmation();
+            initStars();
+            initHarmonyWave();
+            startMoneyCounter();
+
+            elements.breathsToday.textContent = state.breathsToday;
+            elements.moneyValue.textContent = state.money.toFixed(2);
+            elements.streakValue.textContent = state.streak;
+            elements.soundToggle.textContent = state.soundEnabled ? '🔔' : '🔕';
+
+            // Update theme every minute
+            setInterval(updateTheme, 60000);
+
+            // Animate harmony wave even when idle
+            setInterval(() => {
+                if (!state.isRunning) {
+                    updateHarmonyWave();
+                }
+            }, 100);
+
+            // Welcome message based on time
+            const period = getTimePeriod();
+            const welcomeMessages = {
+                dawn: 'Good morning, radiant soul. The day awaits your light.',
+                day: 'Welcome back. Your midday reset begins now.',
+                dusk: 'The golden hour beckons. Time to decompress.',
+                night: 'Peaceful evening. Let the stars guide your breath.'
+            };
+
+            setTimeout(() => {
+                showNotification(welcomeMessages[period]);
+            }, 1000);
+        }
+
+        // Start the app
+        init();
+    </script>
+</body>
+</html>
