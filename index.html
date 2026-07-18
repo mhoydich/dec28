@@ -1,1445 +1,951 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SERENITY · El Segundo Meditation</title>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Josefin+Sans:wght@300;400;500&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            /* Dawn Theme (5am-9am) */
-            --dawn-bg: linear-gradient(180deg, #1a1a3e 0%, #4a3f6b 30%, #8b6b7d 60%, #d4a574 100%);
-            --dawn-accent: #d4a574;
-            --dawn-moon: #f5e6d3;
-
-            /* Day Theme (9am-5pm) */
-            --day-bg: linear-gradient(180deg, #2d4a6f 0%, #5a7a9a 30%, #8ab4c4 60%, #c4d4d4 100%);
-            --day-accent: #c4a484;
-            --day-moon: #f0e8dc;
-
-            /* Dusk Theme (5pm-9pm) */
-            --dusk-bg: linear-gradient(180deg, #1a1a4a 0%, #4a2a5a 30%, #8b4a6a 60%, #c45a3a 100%);
-            --dusk-accent: #c45a3a;
-            --dusk-moon: #e8d8c8;
-
-            /* Night Theme (9pm-5am) */
-            --night-bg: linear-gradient(180deg, #0a0a2a 0%, #1a1a4a 40%, #2a2a5a 70%, #3a2a4a 100%);
-            --night-accent: #6a5acd;
-            --night-moon: #d8d0c0;
-
-            /* Current theme variables */
-            --bg: var(--night-bg);
-            --accent: var(--night-accent);
-            --moon: var(--night-moon);
-            --text: #f5f0e8;
-            --text-muted: rgba(245, 240, 232, 0.6);
-            --gold: #d4af37;
-            --copper: #b87333;
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Josefin Sans', sans-serif;
-            background: var(--bg);
-            min-height: 100vh;
-            color: var(--text);
-            overflow-x: hidden;
-            transition: background 2s ease;
-        }
-
-        /* Dithered texture overlay */
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 4 4' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='1' cy='1' r='0.5' fill='%23ffffff' opacity='0.03'/%3E%3Ccircle cx='3' cy='3' r='0.5' fill='%23ffffff' opacity='0.03'/%3E%3C/svg%3E");
-            background-size: 4px 4px;
-            pointer-events: none;
-            z-index: 1000;
-        }
-
-        /* Art Deco decorative lines */
-        .deco-line {
-            height: 2px;
-            background: linear-gradient(90deg, transparent, var(--gold), var(--copper), var(--gold), transparent);
-            margin: 20px 0;
-        }
-
-        .deco-line.thin {
-            height: 1px;
-            opacity: 0.5;
-        }
-
-        /* Header */
-        header {
-            text-align: center;
-            padding: 30px 20px 10px;
-            position: relative;
-        }
-
-        .logo {
-            font-family: 'Playfair Display', serif;
-            font-size: clamp(2rem, 5vw, 3.5rem);
-            font-weight: 700;
-            letter-spacing: 0.3em;
-            background: linear-gradient(135deg, var(--gold), var(--copper), var(--gold));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            text-shadow: 0 0 60px rgba(212, 175, 55, 0.3);
-        }
-
-        .tagline {
-            font-size: 0.85rem;
-            letter-spacing: 0.4em;
-            color: var(--text-muted);
-            margin-top: 5px;
-            text-transform: uppercase;
-        }
-
-        .time-period {
-            display: inline-block;
-            padding: 5px 20px;
-            border: 1px solid var(--accent);
-            border-radius: 20px;
-            font-size: 0.75rem;
-            letter-spacing: 0.2em;
-            margin-top: 15px;
-            color: var(--accent);
-            text-transform: uppercase;
-        }
-
-        /* Money Counter */
-        .money-counter {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: linear-gradient(135deg, rgba(212, 175, 55, 0.2), rgba(184, 115, 51, 0.2));
-            border: 1px solid var(--gold);
-            border-radius: 10px;
-            padding: 15px 25px;
-            z-index: 100;
-            backdrop-filter: blur(10px);
-        }
-
-        .money-label {
-            font-size: 0.65rem;
-            letter-spacing: 0.3em;
-            color: var(--gold);
-            text-transform: uppercase;
-            margin-bottom: 5px;
-        }
-
-        .money-amount {
-            font-family: 'Playfair Display', serif;
-            font-size: 1.5rem;
-            color: var(--gold);
-            font-weight: 600;
-        }
-
-        .money-rate {
-            font-size: 0.6rem;
-            color: var(--text-muted);
-            margin-top: 3px;
-        }
-
-        /* Main Container */
-        .container {
-            max-width: 500px;
-            margin: 0 auto;
-            padding: 0 20px 100px;
-        }
-
-        /* Breathing Circle */
-        .breath-container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 30px 0;
-            position: relative;
-        }
-
-        .breath-circle {
-            width: 220px;
-            height: 220px;
-            border-radius: 50%;
-            background: radial-gradient(circle at 30% 30%, var(--moon), rgba(200, 190, 170, 0.8));
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
-            position: relative;
-            box-shadow:
-                0 0 60px rgba(245, 230, 211, 0.3),
-                0 0 120px rgba(245, 230, 211, 0.1),
-                inset 0 0 60px rgba(0, 0, 0, 0.1);
-            transition: transform 4s ease-in-out, box-shadow 0.5s ease;
-            cursor: pointer;
-        }
-
-        .breath-circle.inhale {
-            transform: scale(1.2);
-            box-shadow:
-                0 0 80px rgba(245, 230, 211, 0.5),
-                0 0 160px rgba(245, 230, 211, 0.2),
-                inset 0 0 60px rgba(0, 0, 0, 0.05);
-        }
-
-        .breath-circle.exhale {
-            transform: scale(0.9);
-        }
-
-        .breath-circle.hold {
-            box-shadow:
-                0 0 100px rgba(212, 175, 55, 0.4),
-                0 0 200px rgba(212, 175, 55, 0.2),
-                inset 0 0 60px rgba(0, 0, 0, 0.1);
-        }
-
-        .breath-text {
-            font-family: 'Playfair Display', serif;
-            font-size: 1.3rem;
-            color: #2a2a4a;
-            text-transform: uppercase;
-            letter-spacing: 0.2em;
-        }
-
-        .breath-timer {
-            font-size: 2.5rem;
-            font-weight: 300;
-            color: #3a3a5a;
-            margin-top: 5px;
-        }
-
-        .breath-instruction {
-            font-size: 0.7rem;
-            color: #5a5a7a;
-            margin-top: 10px;
-            letter-spacing: 0.15em;
-        }
-
-        /* Rings around breath circle */
-        .breath-ring {
-            position: absolute;
-            border-radius: 50%;
-            border: 1px solid var(--accent);
-            opacity: 0.3;
-            pointer-events: none;
-        }
-
-        .breath-ring:nth-child(1) {
-            width: 260px;
-            height: 260px;
-        }
-
-        .breath-ring:nth-child(2) {
-            width: 300px;
-            height: 300px;
-            opacity: 0.2;
-        }
-
-        .breath-ring:nth-child(3) {
-            width: 340px;
-            height: 340px;
-            opacity: 0.1;
-        }
-
-        /* Session Stats */
-        .session-stats {
-            display: flex;
-            justify-content: center;
-            gap: 40px;
-            margin: 20px 0;
-        }
-
-        .stat {
-            text-align: center;
-        }
-
-        .stat-value {
-            font-family: 'Playfair Display', serif;
-            font-size: 1.8rem;
-            color: var(--accent);
-        }
-
-        .stat-label {
-            font-size: 0.65rem;
-            letter-spacing: 0.2em;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            margin-top: 5px;
-        }
-
-        /* Breathing Mode Selector */
-        .mode-section {
-            margin: 30px 0;
-        }
-
-        .section-title {
-            font-family: 'Playfair Display', serif;
-            font-size: 1.1rem;
-            letter-spacing: 0.15em;
-            text-align: center;
-            margin-bottom: 20px;
-            color: var(--text);
-        }
-
-        .mode-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 12px;
-        }
-
-        .mode-card {
-            background: linear-gradient(135deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02));
-            border: 1px solid rgba(212, 175, 55, 0.3);
-            border-radius: 12px;
-            padding: 20px 15px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .mode-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 3px;
-            background: linear-gradient(90deg, var(--gold), var(--copper));
-            transform: scaleX(0);
-            transition: transform 0.3s ease;
-        }
-
-        .mode-card:hover, .mode-card.active {
-            background: linear-gradient(135deg, rgba(212, 175, 55, 0.15), rgba(184, 115, 51, 0.1));
-            border-color: var(--gold);
-            transform: translateY(-2px);
-        }
-
-        .mode-card:hover::before, .mode-card.active::before {
-            transform: scaleX(1);
-        }
-
-        .mode-icon {
-            font-size: 1.8rem;
-            margin-bottom: 10px;
-        }
-
-        .mode-name {
-            font-family: 'Playfair Display', serif;
-            font-size: 0.95rem;
-            margin-bottom: 5px;
-        }
-
-        .mode-timing {
-            font-size: 0.7rem;
-            color: var(--text-muted);
-            letter-spacing: 0.1em;
-        }
-
-        .mode-benefit {
-            font-size: 0.6rem;
-            color: var(--accent);
-            margin-top: 8px;
-            font-style: italic;
-        }
-
-        /* Affirmation Card */
-        .affirmation-card {
-            background: linear-gradient(135deg, rgba(106, 90, 205, 0.2), rgba(212, 175, 55, 0.1));
-            border: 1px solid rgba(212, 175, 55, 0.4);
-            border-radius: 15px;
-            padding: 25px;
-            margin: 30px 0;
-            text-align: center;
-            position: relative;
-        }
-
-        .affirmation-card::before,
-        .affirmation-card::after {
-            content: '✦';
-            position: absolute;
-            color: var(--gold);
-            font-size: 1.2rem;
-        }
-
-        .affirmation-card::before {
-            top: 10px;
-            left: 15px;
-        }
-
-        .affirmation-card::after {
-            bottom: 10px;
-            right: 15px;
-        }
-
-        .affirmation-label {
-            font-size: 0.6rem;
-            letter-spacing: 0.4em;
-            color: var(--gold);
-            text-transform: uppercase;
-            margin-bottom: 15px;
-        }
-
-        .affirmation-text {
-            font-family: 'Playfair Display', serif;
-            font-size: 1.2rem;
-            line-height: 1.6;
-            color: var(--text);
-            font-style: italic;
-        }
-
-        .affirmation-refresh {
-            background: none;
-            border: 1px solid var(--accent);
-            color: var(--accent);
-            padding: 8px 20px;
-            border-radius: 20px;
-            font-size: 0.7rem;
-            letter-spacing: 0.15em;
-            cursor: pointer;
-            margin-top: 20px;
-            transition: all 0.3s ease;
-            font-family: 'Josefin Sans', sans-serif;
-        }
-
-        .affirmation-refresh:hover {
-            background: var(--accent);
-            color: #1a1a2e;
-        }
-
-        /* Feature 1: Cosmic Achievement System */
-        .cosmic-section {
-            margin: 30px 0;
-        }
-
-        .constellation-display {
-            background: linear-gradient(180deg, rgba(10, 10, 42, 0.8), rgba(26, 26, 74, 0.6));
-            border: 1px solid rgba(106, 90, 205, 0.4);
-            border-radius: 15px;
-            padding: 25px;
-            position: relative;
-            overflow: hidden;
-            min-height: 180px;
-        }
-
-        .stars-container {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-        }
-
-        .star {
-            position: absolute;
-            width: 4px;
-            height: 4px;
-            background: var(--gold);
-            border-radius: 50%;
-            box-shadow: 0 0 10px var(--gold);
-            opacity: 0.3;
-            transition: opacity 0.5s ease, transform 0.5s ease;
-        }
-
-        .star.earned {
-            opacity: 1;
-            animation: starPulse 2s ease-in-out infinite;
-        }
-
-        @keyframes starPulse {
-            0%, 100% { transform: scale(1); box-shadow: 0 0 10px var(--gold); }
-            50% { transform: scale(1.3); box-shadow: 0 0 20px var(--gold); }
-        }
-
-        .constellation-line {
-            position: absolute;
-            background: var(--gold);
-            height: 1px;
-            transform-origin: left center;
-            opacity: 0;
-            transition: opacity 0.5s ease;
-        }
-
-        .constellation-line.visible {
-            opacity: 0.6;
-        }
-
-        .constellation-info {
-            position: relative;
-            z-index: 10;
-            text-align: center;
-        }
-
-        .constellation-name {
-            font-family: 'Playfair Display', serif;
-            font-size: 1.1rem;
-            color: var(--gold);
-            margin-bottom: 5px;
-        }
-
-        .constellation-progress {
-            font-size: 0.7rem;
-            color: var(--text-muted);
-            letter-spacing: 0.1em;
-        }
-
-        .streak-counter {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            margin-top: 15px;
-        }
-
-        .streak-flame {
-            font-size: 1.5rem;
-        }
-
-        .streak-value {
-            font-family: 'Playfair Display', serif;
-            font-size: 1.3rem;
-            color: var(--copper);
-        }
-
-        .streak-label {
-            font-size: 0.65rem;
-            color: var(--text-muted);
-            letter-spacing: 0.15em;
-        }
-
-        /* Feature 2: Biometric Harmony Visualizer */
-        .harmony-section {
-            margin: 30px 0;
-        }
-
-        .harmony-visualizer {
-            background: linear-gradient(135deg, rgba(139, 75, 106, 0.2), rgba(74, 42, 90, 0.3));
-            border: 1px solid rgba(196, 90, 58, 0.4);
-            border-radius: 15px;
-            padding: 25px;
-            text-align: center;
-        }
-
-        .harmony-wave {
-            height: 80px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 3px;
-            margin: 15px 0;
-        }
-
-        .wave-bar {
-            width: 4px;
-            background: linear-gradient(180deg, var(--accent), var(--copper));
-            border-radius: 2px;
-            transition: height 0.1s ease;
-        }
-
-        .harmony-score {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 15px;
-            margin-top: 15px;
-        }
-
-        .harmony-value {
-            font-family: 'Playfair Display', serif;
-            font-size: 2rem;
-            color: var(--accent);
-        }
-
-        .harmony-label {
-            font-size: 0.65rem;
-            color: var(--text-muted);
-            letter-spacing: 0.15em;
-            text-transform: uppercase;
-        }
-
-        .harmony-status {
-            font-size: 0.75rem;
-            color: var(--copper);
-            font-style: italic;
-            margin-top: 10px;
-        }
-
-        /* Control Buttons */
-        .controls {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            margin: 25px 0;
-        }
-
-        .btn {
-            font-family: 'Josefin Sans', sans-serif;
-            padding: 15px 40px;
-            border-radius: 30px;
-            font-size: 0.8rem;
-            letter-spacing: 0.2em;
-            text-transform: uppercase;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, var(--gold), var(--copper));
-            border: none;
-            color: #1a1a2e;
-            font-weight: 500;
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 30px rgba(212, 175, 55, 0.3);
-        }
-
-        .btn-secondary {
-            background: transparent;
-            border: 1px solid var(--accent);
-            color: var(--accent);
-        }
-
-        .btn-secondary:hover {
-            background: var(--accent);
-            color: #1a1a2e;
-        }
-
-        /* Landscape Decoration */
-        .landscape {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: 200px;
-            pointer-events: none;
-            z-index: -1;
-            opacity: 0.4;
-        }
-
-        .mountain {
-            position: absolute;
-            bottom: 0;
-            width: 0;
-            height: 0;
-            border-style: solid;
-        }
-
-        .mountain-1 {
-            left: 5%;
-            border-width: 0 80px 120px 80px;
-            border-color: transparent transparent #4a3f6b transparent;
-        }
-
-        .mountain-2 {
-            left: 25%;
-            border-width: 0 120px 180px 120px;
-            border-color: transparent transparent #8b6b7d transparent;
-        }
-
-        .mountain-3 {
-            right: 10%;
-            border-width: 0 100px 150px 100px;
-            border-color: transparent transparent #5a4a6b transparent;
-        }
-
-        .tree {
-            position: absolute;
-            bottom: 0;
-            width: 30px;
-            height: 80px;
-            background: linear-gradient(180deg, #2a4a3a, #1a3a2a);
-            clip-path: polygon(50% 0%, 100% 100%, 0% 100%);
-        }
-
-        .tree-1 { left: 15%; height: 60px; }
-        .tree-2 { left: 20%; height: 90px; }
-        .tree-3 { right: 25%; height: 75px; }
-        .tree-4 { right: 15%; height: 95px; }
-
-        /* Notifications */
-        .notification {
-            position: fixed;
-            bottom: 100px;
-            left: 50%;
-            transform: translateX(-50%) translateY(100px);
-            background: linear-gradient(135deg, var(--gold), var(--copper));
-            color: #1a1a2e;
-            padding: 15px 30px;
-            border-radius: 30px;
-            font-size: 0.8rem;
-            letter-spacing: 0.1em;
-            opacity: 0;
-            transition: all 0.5s ease;
-            z-index: 1000;
-        }
-
-        .notification.show {
-            transform: translateX(-50%) translateY(0);
-            opacity: 1;
-        }
-
-        /* Responsive */
-        @media (max-width: 480px) {
-            .money-counter {
-                top: 10px;
-                right: 10px;
-                padding: 10px 15px;
-            }
-
-            .money-amount {
-                font-size: 1.2rem;
-            }
-
-            .mode-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .session-stats {
-                gap: 20px;
-            }
-
-            .breath-circle {
-                width: 180px;
-                height: 180px;
-            }
-        }
-
-        /* Sound toggle */
-        .sound-toggle {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            background: rgba(255,255,255,0.1);
-            border: 1px solid var(--accent);
-            color: var(--accent);
-            font-size: 1.2rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            z-index: 100;
-        }
-
-        .sound-toggle:hover {
-            background: var(--accent);
-            color: #1a1a2e;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SERENITY · El Segundo · Breathe With The Moon</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Marcellus&family=Poiret+One&family=Josefin+Sans:wght@200;300;400;500&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════════════════════════
+   SERENITY · El Segundo Art Deco 2025 · Second Pass
+   The moon is the breath. The scene is the image.
+   ═══════════════════════════════════════════════════════════ */
+
+:root {
+    /* Night (default) — deep indigo, violet dusk, sand moon */
+    --sky1:#151242; --sky2:#241a5e; --sky3:#3b2a6e; --sky4:#5a3a6a;
+    --moonFill:#efe6d4; --moonGlow:rgba(239,230,212,.55);
+    --m1:#e88f97; --m2:#7a5296; --m3:#2c2350;
+    --ground:#8a4030; --ground2:#6e3226; --bush:#20301f; --treeCol:#1c2a1c;
+    --accent:#c9a24b; --accent2:#b87333;
+    --ink:#f4eee1; --ink-dim:rgba(244,238,225,.55);
+    --panel:rgba(16,13,46,.55); --panelEdge:rgba(201,162,75,.45);
+    --starOpacity:1;
+    --gold:#d4af37; --copper:#b87333;
+}
+[data-period="dawn"] {
+    --sky1:#2a2159; --sky2:#4c3670; --sky3:#8a5876; --sky4:#d99a6c;
+    --moonFill:#fdf3df; --moonGlow:rgba(253,243,223,.6);
+    --m1:#f0a48e; --m2:#9a6485; --m3:#3a2c55;
+    --ground:#9a4c34; --ground2:#7c3a2a; --starOpacity:.25;
+    --accent:#d99a6c; --panel:rgba(30,22,60,.5);
+}
+[data-period="day"] {
+    --sky1:#27456b; --sky2:#3f6488; --sky3:#7aa3b5; --sky4:#c4d2cd;
+    --moonFill:#faf4e6; --moonGlow:rgba(250,244,230,.5);
+    --m1:#c98d84; --m2:#6f6a97; --m3:#31395c;
+    --ground:#8f4a33; --ground2:#734028; --starOpacity:0;
+    --accent:#c4a484; --panel:rgba(24,36,60,.5);
+}
+[data-period="dusk"] {
+    --sky1:#1c1450; --sky2:#3d2166; --sky3:#7c3a68; --sky4:#c8542f;
+    --moonFill:#f3e5cd; --moonGlow:rgba(243,229,205,.6);
+    --m1:#ef8f7c; --m2:#8a4c78; --m3:#2e2250;
+    --ground:#8c3c2c; --ground2:#6e2f22; --starOpacity:.6;
+    --accent:#e0703f; --panel:rgba(26,16,54,.55);
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior:smooth; }
+body {
+    font-family:'Josefin Sans',sans-serif;
+    color:var(--ink);
+    background:var(--sky1);
+    min-height:100vh;
+    overflow-x:hidden;
+}
+
+/* ── Fixed painted scene ─────────────────────────────────── */
+#scene {
+    position:fixed; inset:0; width:100%; height:100%;
+    z-index:0; display:block;
+}
+#scene .clickable { cursor:pointer; }
+#moonGroup {
+    transform-box:fill-box; transform-origin:center;
+    transform:scale(var(--breath,1));
+    will-change:transform;
+}
+#sunburst {
+    transform-box:fill-box; transform-origin:center;
+    animation:spin 240s linear infinite;
+    opacity:.5;
+}
+@keyframes spin { to { transform:rotate(360deg); } }
+@media (prefers-reduced-motion:reduce){ #sunburst{ animation:none; } }
+
+.svgPhase   { font-family:'Poiret One',cursive; font-size:34px; letter-spacing:14px; fill:#3a3357; text-anchor:middle; }
+.svgCount   { font-family:'Marcellus',serif;    font-size:120px; fill:#494066; text-anchor:middle; }
+.svgHint    { font-family:'Josefin Sans',sans-serif; font-size:17px; letter-spacing:5px; fill:#6b628a; text-anchor:middle; }
+.star       { fill:#fff; opacity:calc(var(--starOpacity) * .8); }
+.star.tw    { animation:twinkle 3.4s ease-in-out infinite; }
+@keyframes twinkle { 0%,100%{opacity:calc(var(--starOpacity)*.25);} 50%{opacity:calc(var(--starOpacity)*.95);} }
+
+/* ── Grain + dither bands (the risograph feel) ───────────── */
+#grain {
+    position:fixed; inset:0; z-index:2; pointer-events:none;
+    opacity:.09; mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+.ditherBand {
+    position:fixed; left:0; width:100%; z-index:1; pointer-events:none;
+    background:repeating-linear-gradient(0deg, rgba(255,255,255,.14) 0 1px, transparent 1px 3px);
+    mix-blend-mode:overlay; opacity:.5;
+}
+#band1 { top:11%; height:34px; }
+#band2 { top:15%; height:14px; opacity:.35; }
+#band3 { top:52%; height:26px; opacity:.3; }
+
+/* ── Layout shell ────────────────────────────────────────── */
+main { position:relative; z-index:3; }
+.hero { min-height:100vh; display:flex; flex-direction:column; justify-content:space-between; align-items:center; padding:26px 20px 40px; }
+
+.masthead { text-align:center; }
+.logo {
+    font-family:'Poiret One',cursive;
+    font-size:clamp(2.2rem,6vw,3.6rem);
+    letter-spacing:.42em; margin-left:.42em;
+    background:linear-gradient(180deg,#f0dfae,var(--gold) 45%,var(--copper));
+    -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent;
+    filter:drop-shadow(0 0 24px rgba(212,175,55,.25));
+}
+.tagline { font-size:.72rem; letter-spacing:.5em; margin-left:.5em; color:var(--ink-dim); text-transform:uppercase; margin-top:6px; }
+.periodChip {
+    display:inline-flex; align-items:center; gap:10px;
+    margin-top:14px; padding:7px 22px;
+    border:1px solid var(--accent); border-radius:2px;
+    font-size:.68rem; letter-spacing:.32em; text-transform:uppercase; color:var(--accent);
+    position:relative;
+}
+.periodChip::before,.periodChip::after {
+    content:'◆'; font-size:.5rem; color:var(--accent);
+}
+
+.heroFoot { width:100%; max-width:560px; text-align:center; }
+.controls { display:flex; justify-content:center; gap:14px; margin-bottom:22px; flex-wrap:wrap; }
+.btn {
+    font-family:'Josefin Sans',sans-serif;
+    padding:15px 42px; font-size:.74rem; letter-spacing:.28em; text-transform:uppercase;
+    cursor:pointer; transition:all .3s ease; border-radius:2px;
+}
+.btn-primary {
+    border:none; color:#1c1636; font-weight:500;
+    background:linear-gradient(135deg,#e8cf8a,var(--gold) 40%,var(--copper));
+    box-shadow:0 6px 26px rgba(212,175,55,.25);
+}
+.btn-primary:hover { transform:translateY(-2px); box-shadow:0 12px 34px rgba(212,175,55,.4); }
+.btn-ghost { background:transparent; border:1px solid var(--accent); color:var(--accent); }
+.btn-ghost:hover { background:var(--accent); color:#1c1636; }
+
+.statRow { display:flex; justify-content:center; gap:0; border-top:1px solid var(--panelEdge); border-bottom:1px solid var(--panelEdge); }
+.stat { flex:1; padding:14px 8px; position:relative; }
+.stat + .stat::before { content:''; position:absolute; left:0; top:20%; bottom:20%; width:1px; background:var(--panelEdge); }
+.statV { font-family:'Marcellus',serif; font-size:1.55rem; color:var(--accent); }
+.statL { font-size:.58rem; letter-spacing:.3em; text-transform:uppercase; color:var(--ink-dim); margin-top:4px; }
+.scrollHint { margin-top:20px; font-size:.6rem; letter-spacing:.4em; color:var(--ink-dim); animation:bob 3s ease-in-out infinite; }
+@keyframes bob { 0%,100%{transform:translateY(0);} 50%{transform:translateY(6px);} }
+
+/* ── Abundance ledger (money) ────────────────────────────── */
+.ledger {
+    position:fixed; top:18px; right:18px; z-index:10;
+    padding:12px 20px 14px; text-align:right;
+    background:linear-gradient(160deg,rgba(212,175,55,.16),rgba(30,22,60,.55));
+    border:1px solid var(--gold); border-radius:2px;
+    backdrop-filter:blur(8px);
+    clip-path:polygon(12px 0,100% 0,100% calc(100% - 12px),calc(100% - 12px) 100%,0 100%,0 12px);
+}
+.ledgerL { font-size:.56rem; letter-spacing:.34em; color:var(--gold); text-transform:uppercase; }
+.ledgerV { font-family:'Marcellus',serif; font-size:1.5rem; color:#f0dfae; margin-top:2px; font-variant-numeric:tabular-nums; text-shadow:0 0 18px rgba(212,175,55,.5); }
+.ledgerR { font-size:.55rem; color:var(--ink-dim); margin-top:2px; letter-spacing:.08em; }
+.ledger.tick .ledgerV { animation:coin .45s ease; }
+@keyframes coin { 0%{transform:translateY(0);} 35%{transform:translateY(-4px); color:#fff;} 100%{transform:translateY(0);} }
+
+/* ── Deco panels ─────────────────────────────────────────── */
+.deck { max-width:620px; margin:0 auto; padding:30px 20px 140px; display:flex; flex-direction:column; gap:44px; }
+.panel {
+    position:relative; padding:30px 26px;
+    background:var(--panel); backdrop-filter:blur(12px);
+    border:1px solid var(--panelEdge); border-radius:2px;
+}
+.panel::before,.panel::after {
+    content:''; position:absolute; width:14px; height:14px;
+    border:1px solid var(--gold);
+}
+.panel::before { top:-1px; left:-1px; border-right:none; border-bottom:none; }
+.panel::after  { bottom:-1px; right:-1px; border-left:none; border-top:none; }
+.panelTitle {
+    text-align:center; font-family:'Poiret One',cursive;
+    font-size:1.05rem; letter-spacing:.4em; margin-left:.4em;
+    text-transform:uppercase; color:var(--ink); margin-bottom:6px;
+}
+.panelRule { display:flex; align-items:center; gap:10px; margin:10px 0 22px; }
+.panelRule::before,.panelRule::after { content:''; flex:1; height:1px; background:linear-gradient(90deg,transparent,var(--gold)); }
+.panelRule::after { background:linear-gradient(90deg,var(--gold),transparent); }
+.panelRule span { color:var(--gold); font-size:.7rem; }
+
+/* ── Affirmation ─────────────────────────────────────────── */
+.affirmText {
+    font-family:'Marcellus',serif; font-size:1.25rem; line-height:1.7;
+    text-align:center; font-style:italic; min-height:3.4em;
+    transition:opacity .4s ease;
+}
+.affirmBtnRow { text-align:center; margin-top:18px; }
+.chipBtn {
+    background:none; border:1px solid var(--accent); color:var(--accent);
+    padding:9px 24px; font-size:.62rem; letter-spacing:.26em; text-transform:uppercase;
+    cursor:pointer; border-radius:2px; transition:all .3s; font-family:'Josefin Sans',sans-serif;
+}
+.chipBtn:hover { background:var(--accent); color:#1c1636; }
+
+/* ── Modes ───────────────────────────────────────────────── */
+.modeGrid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
+.mode {
+    padding:18px 8px 14px; text-align:center; cursor:pointer;
+    border:1px solid rgba(212,175,55,.25); border-radius:2px;
+    background:rgba(255,255,255,.03); transition:all .3s ease; position:relative;
+}
+.mode:hover { border-color:var(--gold); transform:translateY(-2px); }
+.mode.active { border-color:var(--gold); background:linear-gradient(180deg,rgba(212,175,55,.18),rgba(212,175,55,.04)); }
+.mode.active::after { content:'◆'; position:absolute; top:-8px; left:50%; transform:translateX(-50%); color:var(--gold); font-size:.6rem; background:transparent; }
+.mode.suggested::before { content:'suggested'; position:absolute; bottom:-9px; left:50%; transform:translateX(-50%); font-size:.5rem; letter-spacing:.2em; color:var(--accent); background:var(--sky1); padding:0 6px; }
+.modeGlyph { font-size:1.3rem; margin-bottom:8px; color:var(--accent); font-family:'Marcellus',serif; }
+.modeName { font-family:'Marcellus',serif; font-size:.85rem; }
+.modeT { font-size:.62rem; color:var(--ink-dim); letter-spacing:.15em; margin-top:4px; }
+.modeB { font-size:.56rem; color:var(--accent); font-style:italic; margin-top:6px; }
+
+/* ── Release Ritual ──────────────────────────────────────── */
+.ritualRow { display:flex; gap:10px; }
+.ritualInput {
+    flex:1; background:rgba(255,255,255,.05); border:1px solid var(--panelEdge);
+    border-radius:2px; padding:14px 16px; color:var(--ink);
+    font-family:'Josefin Sans',sans-serif; font-size:.9rem; letter-spacing:.04em; outline:none;
+}
+.ritualInput:focus { border-color:var(--gold); }
+.ritualInput::placeholder { color:var(--ink-dim); }
+.ritualNote { text-align:center; font-size:.68rem; color:var(--ink-dim); margin-top:14px; line-height:1.7; font-style:italic; min-height:2em; transition:opacity .4s; }
+.floatChar {
+    position:fixed; z-index:50; pointer-events:none;
+    font-family:'Marcellus',serif; color:#f0dfae; text-shadow:0 0 12px rgba(240,223,174,.8);
+}
+
+/* ── Constellation ───────────────────────────────────────── */
+.skyBox { position:relative; height:170px; margin:6px 0 14px; border:1px solid rgba(106,90,205,.35); border-radius:2px; overflow:hidden;
+    background:radial-gradient(ellipse at 50% 120%, rgba(106,90,205,.25), rgba(8,6,30,.6)); }
+.cStar { position:absolute; width:5px; height:5px; border-radius:50%; background:rgba(212,175,55,.25); transition:all .5s; }
+.cStar.lit { background:var(--gold); box-shadow:0 0 12px var(--gold), 0 0 30px rgba(212,175,55,.5); animation:cPulse 2.6s ease-in-out infinite; }
+@keyframes cPulse { 0%,100%{transform:scale(1);} 50%{transform:scale(1.45);} }
+.cLine { position:absolute; height:1px; background:linear-gradient(90deg,rgba(212,175,55,.7),rgba(212,175,55,.15)); transform-origin:left center; }
+.cMeta { display:flex; justify-content:space-between; align-items:center; }
+.cName { font-family:'Marcellus',serif; color:var(--gold); font-size:1rem; }
+.cProg { font-size:.62rem; letter-spacing:.2em; color:var(--ink-dim); }
+.streak { display:flex; align-items:baseline; gap:8px; }
+.streakV { font-family:'Marcellus',serif; font-size:1.2rem; color:var(--copper); }
+.streakL { font-size:.58rem; letter-spacing:.24em; color:var(--ink-dim); text-transform:uppercase; }
+
+/* ── Harmony ─────────────────────────────────────────────── */
+.wave { height:76px; display:flex; align-items:center; justify-content:center; gap:3px; margin:8px 0 16px; }
+.wbar { width:4px; border-radius:2px; background:linear-gradient(180deg,var(--accent),var(--copper)); transition:height .12s linear; height:5px; }
+.harmMeta { display:flex; justify-content:center; align-items:baseline; gap:14px; }
+.harmV { font-family:'Marcellus',serif; font-size:2rem; color:var(--accent); }
+.harmL { font-size:.6rem; letter-spacing:.26em; text-transform:uppercase; color:var(--ink-dim); }
+.harmS { text-align:center; font-size:.72rem; color:var(--copper); font-style:italic; margin-top:10px; }
+
+/* ── Audio buttons / toast / footer ──────────────────────── */
+.audioDock { position:fixed; bottom:18px; right:18px; z-index:10; display:flex; flex-direction:column; gap:10px; }
+.dockBtn {
+    width:48px; height:48px; border-radius:2px; cursor:pointer;
+    background:var(--panel); backdrop-filter:blur(8px);
+    border:1px solid var(--panelEdge); color:var(--accent); font-size:1.05rem;
+    transition:all .3s;
+    clip-path:polygon(8px 0,100% 0,100% calc(100% - 8px),calc(100% - 8px) 100%,0 100%,0 8px);
+}
+.dockBtn:hover,.dockBtn.on { background:var(--accent); color:#1c1636; border-color:var(--accent); }
+.toast {
+    position:fixed; bottom:90px; left:50%; transform:translateX(-50%) translateY(30px);
+    z-index:60; padding:13px 30px; max-width:88vw; text-align:center;
+    background:linear-gradient(135deg,#e8cf8a,var(--gold) 45%,var(--copper));
+    color:#1c1636; font-size:.74rem; letter-spacing:.1em;
+    border-radius:2px; opacity:0; transition:all .5s ease; pointer-events:none;
+    clip-path:polygon(10px 0,100% 0,100% calc(100% - 10px),calc(100% - 10px) 100%,0 100%,0 10px);
+}
+.toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+footer { position:relative; z-index:3; text-align:center; padding:0 20px 46px; font-size:.58rem; letter-spacing:.34em; color:var(--ink-dim); text-transform:uppercase; }
+
+@media (max-width:520px) {
+    .modeGrid { grid-template-columns:repeat(2,1fr); }
+    .ledger { padding:9px 14px 10px; } .ledgerV { font-size:1.15rem; }
+    .svgCount { font-size:150px; } .svgPhase { font-size:42px; letter-spacing:10px; } .svgHint{ font-size:22px; }
+}
+</style>
 </head>
-<body>
-    <!-- Money Counter -->
-    <div class="money-counter">
-        <div class="money-label">Wealth Manifesting</div>
-        <div class="money-amount">$<span id="moneyValue">0.00</span></div>
-        <div class="money-rate">+$0.17/breath cycle</div>
+<body data-period="night">
+
+<!-- ═══ PAINTED SCENE (the image, alive) ═══ -->
+<svg id="scene" viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+    <defs>
+        <linearGradient id="skyGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0"   style="stop-color:var(--sky1)"/>
+            <stop offset=".45" style="stop-color:var(--sky2)"/>
+            <stop offset=".72" style="stop-color:var(--sky3)"/>
+            <stop offset="1"   style="stop-color:var(--sky4)"/>
+        </linearGradient>
+        <radialGradient id="moonGrad" cx=".38" cy=".34" r=".85">
+            <stop offset="0" style="stop-color:#fbf6ea"/>
+            <stop offset=".7" style="stop-color:var(--moonFill)"/>
+            <stop offset="1" style="stop-color:#d9cbaf"/>
+        </radialGradient>
+        <filter id="stipple" x="-20%" y="-20%" width="140%" height="140%">
+            <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" result="n"/>
+            <feDisplacementMap in="SourceGraphic" in2="n" scale="26"/>
+        </filter>
+        <filter id="softStipple" x="-20%" y="-20%" width="140%" height="140%">
+            <feTurbulence type="fractalNoise" baseFrequency="0.5" numOctaves="2" result="n"/>
+            <feDisplacementMap in="SourceGraphic" in2="n" scale="14"/>
+        </filter>
+        <filter id="moonHalo"><feGaussianBlur stdDeviation="34"/></filter>
+    </defs>
+
+    <!-- sky + stars -->
+    <rect width="1440" height="900" fill="url(#skyGrad)"/>
+    <g id="starField"></g>
+
+    <!-- moon: halo, deco sunburst, stippled speckle ring, disc -->
+    <g id="moonAnchor">
+        <circle cx="720" cy="392" r="300" fill="var(--moonGlow)" filter="url(#moonHalo)" opacity=".8"/>
+        <g id="sunburst" stroke="var(--accent)" stroke-width="1.4" opacity=".5"></g>
+        <g id="moonGroup">
+            <circle cx="720" cy="392" r="286" fill="none" stroke="var(--moonFill)" stroke-width="9" filter="url(#stipple)" opacity=".85"/>
+            <circle cx="720" cy="392" r="296" fill="none" stroke="var(--moonFill)" stroke-width="4" filter="url(#stipple)" opacity=".4"/>
+            <circle cx="720" cy="392" r="278" fill="url(#moonGrad)"/>
+        </g>
+        <!-- progress arc -->
+        <circle id="progRing" cx="720" cy="392" r="322" fill="none"
+                stroke="var(--gold)" stroke-width="2.5" pathLength="100"
+                stroke-dasharray="0 100" stroke-linecap="round"
+                transform="rotate(-90 720 392)" opacity=".9"/>
+        <circle id="progRingBase" cx="720" cy="392" r="322" fill="none" stroke="var(--gold)" stroke-width="1" opacity=".18"/>
+        <!-- breath text lives ON the moon -->
+        <text id="svgPhase" class="svgPhase" x="720" y="348">TAP THE MOON</text>
+        <text id="svgCount" class="svgCount" x="720" y="452">◐</text>
+        <text id="svgHint"  class="svgHint"  x="720" y="496">your practice awaits</text>
+        <circle id="moonHit" class="clickable" cx="720" cy="392" r="290" fill="transparent"/>
+    </g>
+
+    <!-- mountains, pink → violet → deep -->
+    <path fill="var(--m1)" filter="url(#softStipple)" d="M0,568 L110,540 L235,566 L400,522 L555,556 L720,504 L880,548 L1035,520 L1195,556 L1320,532 L1440,560 L1440,900 L0,900 Z"/>
+    <path fill="var(--m2)" filter="url(#softStipple)" d="M0,628 L150,600 L305,638 L465,594 L640,644 L805,606 L960,648 L1125,610 L1285,652 L1440,622 L1440,900 L0,900 Z"/>
+    <path fill="var(--m3)" filter="url(#softStipple)" d="M0,706 L175,676 L345,712 L520,682 L705,722 L900,686 L1085,716 L1265,690 L1440,716 L1440,900 L0,900 Z"/>
+
+    <!-- ground -->
+    <rect y="762" width="1440" height="138" fill="var(--ground)"/>
+    <rect y="762" width="1440" height="138" fill="var(--ground2)" filter="url(#softStipple)" opacity=".55"/>
+    <g id="bushes"></g>
+    <g id="trees"></g>
+</svg>
+
+<div id="grain"></div>
+<div class="ditherBand" id="band1"></div>
+<div class="ditherBand" id="band2"></div>
+<div class="ditherBand" id="band3"></div>
+
+<!-- ═══ ABUNDANCE LEDGER ═══ -->
+<div class="ledger" id="ledger">
+    <div class="ledgerL">Abundance Ledger</div>
+    <div class="ledgerV">$<span id="moneyValue">0.00</span></div>
+    <div class="ledgerR">always ascending ↗</div>
+</div>
+
+<!-- ═══ AUDIO DOCK ═══ -->
+<div class="audioDock">
+    <button class="dockBtn" id="chimeBtn" title="Phase chimes">♪</button>
+    <button class="dockBtn" id="droneBtn" title="Ambient drone">≋</button>
+</div>
+
+<main>
+    <!-- HERO -->
+    <section class="hero">
+        <div class="masthead">
+            <h1 class="logo">SERENITY</h1>
+            <div class="tagline">El Segundo · Est. 2025</div><br>
+            <div class="periodChip"><span id="periodLabel">Night Reflection</span></div>
+        </div>
+        <div class="heroFoot">
+            <div class="controls">
+                <button class="btn btn-primary" id="startBtn">Begin Session</button>
+                <button class="btn btn-ghost" id="resetBtn">Reset</button>
+            </div>
+            <div class="statRow">
+                <div class="stat"><div class="statV" id="cyclesCount">0</div><div class="statL">Cycles</div></div>
+                <div class="stat"><div class="statV" id="totalMinutes">0:00</div><div class="statL">Session</div></div>
+                <div class="stat"><div class="statV" id="breathsToday">0</div><div class="statL">Today</div></div>
+                <div class="stat"><div class="statV" id="streakValue">1</div><div class="statL">Streak</div></div>
+            </div>
+            <div class="scrollHint">▾ &nbsp;DESCEND&nbsp; ▾</div>
+        </div>
+    </section>
+
+    <!-- DECK -->
+    <div class="deck">
+
+        <!-- Practice modes -->
+        <section class="panel">
+            <h2 class="panelTitle">Choose Your Practice</h2>
+            <div class="panelRule"><span>◆</span></div>
+            <div class="modeGrid" id="modeGrid">
+                <div class="mode active" data-mode="calm"><div class="modeGlyph">☾</div><div class="modeName">Calm</div><div class="modeT">4 · 7 · 8</div><div class="modeB">deep release</div></div>
+                <div class="mode" data-mode="box"><div class="modeGlyph">◇</div><div class="modeName">Box</div><div class="modeT">4 · 4 · 4 · 4</div><div class="modeB">steady mind</div></div>
+                <div class="mode" data-mode="energy"><div class="modeGlyph">☀</div><div class="modeName">Energize</div><div class="modeT">2 · 1 · 4</div><div class="modeB">morning fire</div></div>
+                <div class="mode" data-mode="focus"><div class="modeGlyph">◎</div><div class="modeName">Focus</div><div class="modeT">5 · 2 · 5 · 2</div><div class="modeB">sharp clarity</div></div>
+                <div class="mode" data-mode="sleep"><div class="modeGlyph">✧</div><div class="modeName">Sleep</div><div class="modeT">4 · 8 · 8</div><div class="modeB">soft descent</div></div>
+                <div class="mode" data-mode="coast"><div class="modeGlyph">≈</div><div class="modeName">Coastline</div><div class="modeT">5.5 · 5.5</div><div class="modeB">tide rhythm</div></div>
+            </div>
+        </section>
+
+        <!-- Affirmation -->
+        <section class="panel">
+            <h2 class="panelTitle">Daily Wisdom</h2>
+            <div class="panelRule"><span>✦</span></div>
+            <p class="affirmText" id="affirmText">"Your breath is the bridge between your body and your dreams."</p>
+            <div class="affirmBtnRow"><button class="chipBtn" id="newAffirm">Another Truth</button></div>
+        </section>
+
+        <!-- Release Ritual -->
+        <section class="panel">
+            <h2 class="panelTitle">Release Ritual</h2>
+            <div class="panelRule"><span>☽</span></div>
+            <div class="ritualRow">
+                <input class="ritualInput" id="ritualInput" maxlength="60" placeholder="Write what weighs on you…">
+                <button class="chipBtn" id="ritualBtn">Release</button>
+            </div>
+            <p class="ritualNote" id="ritualNote">Whatever you write is never stored — it is given to the moon, letter by letter.</p>
+        </section>
+
+        <!-- Cosmic Journey -->
+        <section class="panel">
+            <h2 class="panelTitle">Cosmic Journey</h2>
+            <div class="panelRule"><span>✦</span></div>
+            <div class="skyBox" id="skyBox"></div>
+            <div class="cMeta">
+                <div>
+                    <div class="cName" id="cName">The Seeker</div>
+                    <div class="cProg" id="cProg">0 / 7 stars</div>
+                </div>
+                <div class="streak"><span>🔥</span><span class="streakV" id="streakValue2">1</span><span class="streakL">day streak</span></div>
+            </div>
+        </section>
+
+        <!-- Harmony -->
+        <section class="panel">
+            <h2 class="panelTitle">Harmony Index</h2>
+            <div class="panelRule"><span>◆</span></div>
+            <div class="wave" id="wave"></div>
+            <div class="harmMeta"><span class="harmV" id="harmV">0</span><span class="harmL">coherence</span></div>
+            <div class="harmS" id="harmS">Begin breathing to tune your instrument.</div>
+        </section>
+
     </div>
+</main>
 
-    <!-- Sound Toggle -->
-    <button class="sound-toggle" id="soundToggle" title="Toggle Sound">
-        🔔
-    </button>
+<footer>Serenity · breathe in gold · exhale everything else</footer>
+<div class="toast" id="toast"></div>
 
-    <!-- Header -->
-    <header>
-        <h1 class="logo">SERENITY</h1>
-        <p class="tagline">El Segundo · Est. 2025</p>
-        <div class="time-period" id="timePeriod">Evening Meditation</div>
-    </header>
+<script>
+/* ═══════════════════════════════════════════════════════════
+   SERENITY ENGINE · v2
+   ═══════════════════════════════════════════════════════════ */
 
-    <div class="deco-line"></div>
+const $ = id => document.getElementById(id);
 
-    <div class="container">
-        <!-- Breathing Circle -->
-        <div class="breath-container">
-            <div class="breath-ring"></div>
-            <div class="breath-ring"></div>
-            <div class="breath-ring"></div>
-            <div class="breath-circle" id="breathCircle">
-                <span class="breath-text" id="breathText">TAP TO BEGIN</span>
-                <span class="breath-timer" id="breathTimer">—</span>
-                <span class="breath-instruction" id="breathInstruction">Your journey awaits</span>
-            </div>
-        </div>
+const store = {
+    get:(k,d)=>{ try{ const v=localStorage.getItem(k); return v===null?d:JSON.parse(v);}catch(e){return d;} },
+    set:(k,v)=>{ try{ localStorage.setItem(k,JSON.stringify(v)); }catch(e){} }
+};
 
-        <!-- Session Stats -->
-        <div class="session-stats">
-            <div class="stat">
-                <div class="stat-value" id="cyclesCount">0</div>
-                <div class="stat-label">Cycles</div>
-            </div>
-            <div class="stat">
-                <div class="stat-value" id="totalMinutes">0:00</div>
-                <div class="stat-label">Total Time</div>
-            </div>
-            <div class="stat">
-                <div class="stat-value" id="breathsToday">0</div>
-                <div class="stat-label">Today</div>
-            </div>
-        </div>
+const state = {
+    running:false,
+    modeKey:'calm',
+    phaseIdx:0,
+    phaseStart:0,
+    sessionSec:0, sessionTick:null,
+    cycles:0,
+    breathsToday: store.get('breathsToday',0),
+    lastDate: store.get('lastBreathDate',null),
+    money: parseFloat(store.get('totalMoney','0')) || store.get('totalMoney',0) || 0,
+    milestoneHit: store.get('milestoneHit',0),
+    streak: store.get('streak',1),
+    stars: store.get('starsEarned',0),
+    harmony:0,
+    chimes: store.get('chimesOn',true),
+    drone:false,
+};
+if (typeof state.money !== 'number' || isNaN(state.money)) state.money = 0;
 
-        <div class="deco-line thin"></div>
+/* ── Breathing patterns: [seconds per phase] + labels ────── */
+const MODES = {
+    calm:   { phases:[{n:'INHALE',t:4},{n:'HOLD',t:7},{n:'EXHALE',t:8}] },
+    box:    { phases:[{n:'INHALE',t:4},{n:'HOLD',t:4},{n:'EXHALE',t:4},{n:'HOLD',t:4}] },
+    energy: { phases:[{n:'INHALE',t:2},{n:'HOLD',t:1},{n:'EXHALE',t:4}] },
+    focus:  { phases:[{n:'INHALE',t:5},{n:'HOLD',t:2},{n:'EXHALE',t:5},{n:'HOLD',t:2}] },
+    sleep:  { phases:[{n:'INHALE',t:4},{n:'HOLD',t:8},{n:'EXHALE',t:8}] },
+    coast:  { phases:[{n:'INHALE',t:5.5},{n:'EXHALE',t:5.5}] }, // resonance breathing, ocean cadence
+};
+const PHASE_HINTS = {
+    INHALE:'draw in the light', HOLD:'let stillness settle', EXHALE:'give it all back'
+};
+const PHASE_SCALE = { INHALE:[0.94,1.10], HOLD:null, EXHALE:[1.10,0.94] };
+const PHASE_NOTES = { INHALE:523.25, HOLD:659.25, EXHALE:392.0 };
 
-        <!-- Affirmation Card -->
-        <div class="affirmation-card">
-            <div class="affirmation-label">✦ Daily Wisdom ✦</div>
-            <p class="affirmation-text" id="affirmationText">
-                "Your breath is the bridge between your body and your dreams."
-            </p>
-            <button class="affirmation-refresh" id="newAffirmation">New Inspiration</button>
-        </div>
+/* ── Time of day ─────────────────────────────────────────── */
+function period(){
+    const h = new Date().getHours();
+    if (h>=5 && h<9) return 'dawn';
+    if (h>=9 && h<17) return 'day';
+    if (h>=17 && h<21) return 'dusk';
+    return 'night';
+}
+const PERIOD_META = {
+    dawn:{ label:'Dawn Awakening', suggest:'energy', hello:'Good morning, radiant one. The sun clocks in for you today.' },
+    day:{ label:'Midday Clarity', suggest:'focus', hello:'Welcome back. Precision hours — breathe like you mean it.' },
+    dusk:{ label:'El Segundo Golden Hour', suggest:'calm', hello:'Golden hour on the coast. Time to let the day dissolve.' },
+    night:{ label:'Night Reflection', suggest:'sleep', hello:'The moon kept your seat warm. Settle in.' }
+};
+function applyPeriod(){
+    const p = period();
+    document.body.dataset.period = p;
+    $('periodLabel').textContent = PERIOD_META[p].label;
+    document.querySelectorAll('.mode').forEach(m=>{
+        m.classList.toggle('suggested', m.dataset.mode === PERIOD_META[p].suggest);
+    });
+}
 
-        <!-- Breathing Modes -->
-        <div class="mode-section">
-            <h2 class="section-title">✦ Choose Your Practice ✦</h2>
-            <div class="mode-grid">
-                <div class="mode-card active" data-mode="calm">
-                    <div class="mode-icon">🌙</div>
-                    <div class="mode-name">Calm</div>
-                    <div class="mode-timing">4-7-8</div>
-                    <div class="mode-benefit">Deep relaxation</div>
-                </div>
-                <div class="mode-card" data-mode="box">
-                    <div class="mode-icon">◇</div>
-                    <div class="mode-name">Box Breath</div>
-                    <div class="mode-timing">4-4-4-4</div>
-                    <div class="mode-benefit">Mental clarity</div>
-                </div>
-                <div class="mode-card" data-mode="energy">
-                    <div class="mode-icon">☀️</div>
-                    <div class="mode-name">Energize</div>
-                    <div class="mode-timing">2-1-4-0</div>
-                    <div class="mode-benefit">Vitality boost</div>
-                </div>
-                <div class="mode-card" data-mode="focus">
-                    <div class="mode-icon">◎</div>
-                    <div class="mode-name">Focus</div>
-                    <div class="mode-timing">5-2-5-2</div>
-                    <div class="mode-benefit">Concentration</div>
-                </div>
-                <div class="mode-card" data-mode="sleep">
-                    <div class="mode-icon">✧</div>
-                    <div class="mode-name">Sleep</div>
-                    <div class="mode-timing">4-8-8-0</div>
-                    <div class="mode-benefit">Restful slumber</div>
-                </div>
-                <div class="mode-card" data-mode="anxiety">
-                    <div class="mode-icon">🍃</div>
-                    <div class="mode-name">Relief</div>
-                    <div class="mode-timing">6-3-6-3</div>
-                    <div class="mode-benefit">Anxiety ease</div>
-                </div>
-            </div>
-        </div>
+/* ── Affirmations (clever, per period) ───────────────────── */
+const AFFIRM = {
+    dawn:[
+        "The sun rehearsed all night just to rise for you.",
+        "You are the morning's best idea so far.",
+        "Coffee wakes the body; this breath wakes the empire.",
+        "Today is unwritten, and you happen to hold the pen.",
+        "Rise slow, aim high — dawn keeps both promises.",
+        "Fresh light, fresh ledger, fresh you."
+    ],
+    day:[
+        "You don't chase the day. The day keeps up with you.",
+        "Every calm exhale is a boardroom advantage.",
+        "Focus is just love, pointed carefully.",
+        "The to-do list works for you, not the reverse.",
+        "Midday sun, mid-flight soul — cruising altitude reached.",
+        "Your composure is compounding interest."
+    ],
+    dusk:[
+        "The sun sets like an applause you earned.",
+        "Golden hour: even the light wants to look like you.",
+        "Release the day gently — it did its best, and so did you.",
+        "What you didn't finish today was simply saved for a stronger you tomorrow.",
+        "The tide never apologizes for leaving. Neither should your stress.",
+        "You built today. Now let dusk gild it."
+    ],
+    night:[
+        "The stars are just the universe taking notes on your potential.",
+        "Rest is not quitting — it's the moon's version of ambition.",
+        "Tonight, your only job is to be gravity's favorite.",
+        "Dreams are drafts of your next masterpiece.",
+        "The moon has watched everything and still believes in you.",
+        "Close your eyes; the universe covers your shift."
+    ]
+};
+function newAffirmation(){
+    const list = AFFIRM[period()];
+    const el = $('affirmText');
+    el.style.opacity = 0;
+    setTimeout(()=>{
+        el.textContent = '"' + list[Math.floor(Math.random()*list.length)] + '"';
+        el.style.opacity = 1;
+    }, 350);
+}
 
-        <div class="controls">
-            <button class="btn btn-primary" id="startBtn">Begin Session</button>
-            <button class="btn btn-secondary" id="resetBtn">Reset</button>
-        </div>
+/* ── Web Audio ───────────────────────────────────────────── */
+let AC = null, droneNodes = null;
+function audio(){ if(!AC) AC = new (window.AudioContext||window.webkitAudioContext)(); if(AC.state==='suspended') AC.resume(); return AC; }
+function chime(freq){
+    if (!state.chimes) return;
+    const ac = audio(), t = ac.currentTime;
+    const o = ac.createOscillator(), g = ac.createGain();
+    o.type = 'sine'; o.frequency.value = freq;
+    const o2 = ac.createOscillator(); o2.type='sine'; o2.frequency.value = freq*2.01;
+    const g2 = ac.createGain(); g2.gain.value = .25;
+    g.gain.setValueAtTime(0, t);
+    g.gain.linearRampToValueAtTime(.14, t+.02);
+    g.gain.exponentialRampToValueAtTime(.0001, t+1.6);
+    o.connect(g); o2.connect(g2); g2.connect(g); g.connect(ac.destination);
+    o.start(t); o2.start(t); o.stop(t+1.7); o2.stop(t+1.7);
+}
+function toggleDrone(){
+    const ac = audio();
+    if (droneNodes){
+        droneNodes.g.gain.linearRampToValueAtTime(0.0001, ac.currentTime+1.2);
+        const dn = droneNodes; setTimeout(()=>{ dn.o1.stop(); dn.o2.stop(); dn.lfo.stop(); },1400);
+        droneNodes = null; state.drone = false;
+    } else {
+        const o1 = ac.createOscillator(), o2 = ac.createOscillator();
+        o1.type='sine'; o1.frequency.value=82.4;          // E2
+        o2.type='triangle'; o2.frequency.value=123.47;    // B2 — a calm fifth
+        const f = ac.createBiquadFilter(); f.type='lowpass'; f.frequency.value=320; f.Q.value=.7;
+        const lfo = ac.createOscillator(); lfo.frequency.value=.07;
+        const lfoG = ac.createGain(); lfoG.gain.value=90;
+        lfo.connect(lfoG); lfoG.connect(f.frequency);
+        const g = ac.createGain(); g.gain.setValueAtTime(0.0001, ac.currentTime);
+        g.gain.linearRampToValueAtTime(.055, ac.currentTime+2.5);
+        o1.connect(f); o2.connect(f); f.connect(g); g.connect(ac.destination);
+        o1.start(); o2.start(); lfo.start();
+        droneNodes = {o1,o2,lfo,g}; state.drone = true;
+    }
+    $('droneBtn').classList.toggle('on', state.drone);
+}
 
-        <div class="deco-line thin"></div>
-
-        <!-- Feature 1: Cosmic Achievement System -->
-        <div class="cosmic-section">
-            <h2 class="section-title">✦ Cosmic Journey ✦</h2>
-            <div class="constellation-display">
-                <div class="stars-container" id="starsContainer"></div>
-                <div class="constellation-info">
-                    <div class="constellation-name" id="constellationName">The Seeker</div>
-                    <div class="constellation-progress" id="constellationProgress">3/7 stars collected</div>
-                    <div class="streak-counter">
-                        <span class="streak-flame">🔥</span>
-                        <div>
-                            <div class="streak-value" id="streakValue">1</div>
-                            <div class="streak-label">Day Streak</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="deco-line thin"></div>
-
-        <!-- Feature 2: Biometric Harmony Visualizer -->
-        <div class="harmony-section">
-            <h2 class="section-title">✦ Harmony Index ✦</h2>
-            <div class="harmony-visualizer">
-                <div class="harmony-label">Breath Coherence</div>
-                <div class="harmony-wave" id="harmonyWave"></div>
-                <div class="harmony-score">
-                    <div>
-                        <div class="harmony-value" id="harmonyValue">0</div>
-                        <div class="harmony-label">Coherence Score</div>
-                    </div>
-                </div>
-                <div class="harmony-status" id="harmonyStatus">Begin breathing to measure harmony</div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Landscape decoration -->
-    <div class="landscape">
-        <div class="mountain mountain-1"></div>
-        <div class="mountain mountain-2"></div>
-        <div class="mountain mountain-3"></div>
-        <div class="tree tree-1"></div>
-        <div class="tree tree-2"></div>
-        <div class="tree tree-3"></div>
-        <div class="tree tree-4"></div>
-    </div>
-
-    <!-- Notification -->
-    <div class="notification" id="notification"></div>
-
-    <script>
-        // ============================================
-        // SERENITY - El Segundo Meditation App
-        // Art Deco 2025 Edition
-        // ============================================
-
-        // State
-        const state = {
-            isRunning: false,
-            currentPhase: 'idle', // idle, inhale, hold1, exhale, hold2
-            phaseTime: 0,
-            totalTime: 0,
-            cycles: 0,
-            breathsToday: parseInt(localStorage.getItem('breathsToday') || '0'),
-            lastBreathDate: localStorage.getItem('lastBreathDate'),
-            money: parseFloat(localStorage.getItem('totalMoney') || '0'),
-            streak: parseInt(localStorage.getItem('streak') || '1'),
-            starsEarned: parseInt(localStorage.getItem('starsEarned') || '3'),
-            soundEnabled: localStorage.getItem('soundEnabled') !== 'false',
-            harmonyScore: 0,
-            currentMode: 'calm'
-        };
-
-        // Breathing patterns: [inhale, hold1, exhale, hold2]
-        const breathingModes = {
-            calm: { pattern: [4, 7, 8, 0], name: 'Calm' },
-            box: { pattern: [4, 4, 4, 4], name: 'Box Breath' },
-            energy: { pattern: [2, 1, 4, 0], name: 'Energize' },
-            focus: { pattern: [5, 2, 5, 2], name: 'Focus' },
-            sleep: { pattern: [4, 8, 8, 0], name: 'Sleep' },
-            anxiety: { pattern: [6, 3, 6, 3], name: 'Relief' }
-        };
-
-        // Time-based affirmations
-        const affirmations = {
-            dawn: [
-                "Each sunrise brings fresh possibilities waiting to unfold.",
-                "The morning light carries your intentions into reality.",
-                "You are the architect of this beautiful day.",
-                "Rise like the sun—steady, warm, and full of purpose.",
-                "New beginnings are your specialty; today proves it."
-            ],
-            day: [
-                "Your focused energy creates ripples of positive change.",
-                "Every task you complete builds your empire of accomplishment.",
-                "You navigate challenges like water flows—gracefully and persistently.",
-                "Productivity is your natural state; watch yourself flourish.",
-                "The universe conspires to support your midday momentum."
-            ],
-            dusk: [
-                "As the sun sets, acknowledge all you've created today.",
-                "You've earned this peaceful transition into evening.",
-                "The golden hour reflects your inner radiance.",
-                "Release the day's weight; you've carried it beautifully.",
-                "Twilight whispers: you are exactly where you need to be."
-            ],
-            night: [
-                "The stars above mirror the light within you.",
-                "Rest is not retreat—it's preparation for tomorrow's victories.",
-                "Your dreams tonight plant seeds for tomorrow's reality.",
-                "In stillness, your soul recalibrates for greatness.",
-                "The moon watches over your well-deserved peace."
-            ]
-        };
-
-        // Constellation data
-        const constellations = [
-            { name: "The Seeker", stars: 7 },
-            { name: "The Dreamer", stars: 9 },
-            { name: "The Creator", stars: 12 },
-            { name: "The Sage", stars: 15 },
-            { name: "The Luminary", stars: 20 }
-        ];
-
-        // DOM Elements
-        const elements = {
-            breathCircle: document.getElementById('breathCircle'),
-            breathText: document.getElementById('breathText'),
-            breathTimer: document.getElementById('breathTimer'),
-            breathInstruction: document.getElementById('breathInstruction'),
-            cyclesCount: document.getElementById('cyclesCount'),
-            totalMinutes: document.getElementById('totalMinutes'),
-            breathsToday: document.getElementById('breathsToday'),
-            moneyValue: document.getElementById('moneyValue'),
-            timePeriod: document.getElementById('timePeriod'),
-            affirmationText: document.getElementById('affirmationText'),
-            startBtn: document.getElementById('startBtn'),
-            resetBtn: document.getElementById('resetBtn'),
-            newAffirmation: document.getElementById('newAffirmation'),
-            soundToggle: document.getElementById('soundToggle'),
-            starsContainer: document.getElementById('starsContainer'),
-            constellationName: document.getElementById('constellationName'),
-            constellationProgress: document.getElementById('constellationProgress'),
-            streakValue: document.getElementById('streakValue'),
-            harmonyWave: document.getElementById('harmonyWave'),
-            harmonyValue: document.getElementById('harmonyValue'),
-            harmonyStatus: document.getElementById('harmonyStatus'),
-            notification: document.getElementById('notification')
-        };
-
-        // Get time period
-        function getTimePeriod() {
-            const hour = new Date().getHours();
-            if (hour >= 5 && hour < 9) return 'dawn';
-            if (hour >= 9 && hour < 17) return 'day';
-            if (hour >= 17 && hour < 21) return 'dusk';
-            return 'night';
+/* ── Money: the ledger only ever ascends ─────────────────── */
+const MILESTONES = [1,5,10,25,50,100,250,500,1000,2500];
+const MILESTONE_LINES = [
+    "First dollar of inner peace. Frame it.",
+    "Five dollars of pure calm — the universe tips well.",
+    "Double digits. Your lungs are now an asset class.",
+    "Twenty-five. Breathing: still your best-performing investment.",
+    "Fifty. Wall Street wishes it compounded like your exhale.",
+    "One hundred. Officially a serenity mogul.",
+    "Two-fifty. Your portfolio is 100% moonlight.",
+    "Five hundred. The moon is considering YOU for a loan.",
+    "One thousand. Abundance achieved; humility optional.",
+    "Twenty-five hundred. You breathe, therefore you bank."
+];
+function addMoney(n){
+    state.money += n;
+    store.set('totalMoney', state.money);
+    $('moneyValue').textContent = state.money.toFixed(2);
+    const led = $('ledger');
+    led.classList.remove('tick'); void led.offsetWidth; led.classList.add('tick');
+    MILESTONES.forEach((m,i)=>{
+        if (state.money >= m && state.milestoneHit < m){
+            state.milestoneHit = m; store.set('milestoneHit', m);
+            toast('✦ $' + m + ' — ' + MILESTONE_LINES[i]);
         }
+    });
+}
+setInterval(()=>{ addMoney(state.running ? 0.011 : 0.003); }, 1000); // drips faster while practicing
 
-        // Update theme based on time
-        function updateTheme() {
-            const period = getTimePeriod();
-            const root = document.documentElement;
-            const body = document.body;
+/* ── Scene: stars, sunburst, trees, bushes ───────────────── */
+const SVGNS = 'http://www.w3.org/2000/svg';
+function el(tag, attrs, parent){
+    const e = document.createElementNS(SVGNS, tag);
+    for (const k in attrs) e.setAttribute(k, attrs[k]);
+    if (parent) parent.appendChild(e);
+    return e;
+}
+function buildStars(){
+    const g = $('starField');
+    for (let i=0;i<90;i++){
+        const s = el('circle', {
+            cx: Math.random()*1440, cy: Math.random()*470,
+            r: Math.random()*1.4 + .4, class:'star' + (Math.random()<.4?' tw':'')
+        }, g);
+        if (s.classList.contains('tw')) s.style.animationDelay = (Math.random()*3)+'s';
+    }
+}
+function buildSunburst(){
+    const g = $('sunburst');
+    const cx=720, cy=392, r1=336, r2=372;
+    for (let i=0;i<48;i++){
+        const a = (i/48)*Math.PI*2;
+        const long = i%4===0;
+        el('line', {
+            x1: cx + Math.cos(a)*r1, y1: cy + Math.sin(a)*r1,
+            x2: cx + Math.cos(a)*(long?r2+16:r2), y2: cy + Math.sin(a)*(long?r2+16:r2),
+            'stroke-width': long?1.6:.9
+        }, g);
+    }
+}
+function pine(g, x, baseY, h, w, lean){
+    const grp = el('g', { fill:'var(--treeCol)', transform:`rotate(${lean||0} ${x} ${baseY})` }, g);
+    el('rect', { x:x-2.5, y:baseY-h*.28, width:5, height:h*.3, rx:2 }, grp);
+    const tiers = 5;
+    for (let i=0;i<tiers;i++){
+        const t = i/(tiers-1);
+        const y = baseY - h*.2 - t*h*.72;
+        const cw = w*(1-t*.72)*.5;
+        const th = h*.30;
+        const jag = cw*.18;
+        el('polygon', { points:
+            `${x-cw},${y} ${x-cw+jag},${y-th*.3} ${x-cw*.55},${y-th*.35} ${x},${y-th} ${x+cw*.55},${y-th*.35} ${x+cw-jag},${y-th*.3} ${x+cw},${y}`
+        }, grp);
+    }
+}
+function buildFlora(){
+    const t = $('trees');
+    // left — one leaning elder, like the image
+    pine(t, 150, 775, 300, 130, -7);
+    pine(t, 235, 780, 175, 88, -2);
+    pine(t, 305, 778, 120, 66, 0);
+    // right — tall proud pines
+    pine(t, 1205, 778, 250, 105, 2);
+    pine(t, 1300, 782, 360, 135, 1);
+    pine(t, 1120, 776, 140, 72, 0);
+    const b = $('bushes');
+    for (let i=0;i<26;i++){
+        const x = Math.random()*1440, y = 770 + Math.random()*115;
+        el('ellipse', { cx:x, cy:y, rx:10+Math.random()*22, ry:5+Math.random()*9,
+            fill: Math.random()<.3 ? 'rgba(120,110,200,.5)' : 'var(--bush)', opacity:.75 }, b);
+    }
+}
 
-            const themes = {
-                dawn: {
-                    bg: 'linear-gradient(180deg, #1a1a3e 0%, #4a3f6b 30%, #8b6b7d 60%, #d4a574 100%)',
-                    accent: '#d4a574',
-                    moon: '#f5e6d3',
-                    label: 'Dawn Awakening'
-                },
-                day: {
-                    bg: 'linear-gradient(180deg, #2d4a6f 0%, #5a7a9a 30%, #8ab4c4 60%, #c4d4d4 100%)',
-                    accent: '#c4a484',
-                    moon: '#f0e8dc',
-                    label: 'Midday Clarity'
-                },
-                dusk: {
-                    bg: 'linear-gradient(180deg, #1a1a4a 0%, #4a2a5a 30%, #8b4a6a 60%, #c45a3a 100%)',
-                    accent: '#c45a3a',
-                    moon: '#e8d8c8',
-                    label: 'Golden Hour'
-                },
-                night: {
-                    bg: 'linear-gradient(180deg, #0a0a2a 0%, #1a1a4a 40%, #2a2a5a 70%, #3a2a4a 100%)',
-                    accent: '#6a5acd',
-                    moon: '#d8d0c0',
-                    label: 'Night Reflection'
-                }
-            };
+/* ── Breathing engine (rAF, eased) ───────────────────────── */
+const easeIO = t => t<.5 ? 2*t*t : 1-Math.pow(-2*t+2,2)/2;
+let currentScale = 1;
 
-            const theme = themes[period];
-            root.style.setProperty('--bg', theme.bg);
-            root.style.setProperty('--accent', theme.accent);
-            root.style.setProperty('--moon', theme.moon);
-            body.style.background = theme.bg;
-            elements.timePeriod.textContent = theme.label;
+function phase(){ return MODES[state.modeKey].phases[state.phaseIdx]; }
 
-            // Suggest appropriate breathing mode
-            const recommendedModes = {
-                dawn: 'energy',
-                day: 'focus',
-                dusk: 'calm',
-                night: 'sleep'
-            };
+function startSession(){
+    audio();
+    state.running = true;
+    state.phaseIdx = 0;
+    state.phaseStart = performance.now();
+    $('startBtn').textContent = 'Pause';
+    chime(PHASE_NOTES[phase().n]);
+    if (!state.sessionTick){
+        state.sessionTick = setInterval(()=>{
+            state.sessionSec++;
+            const m = Math.floor(state.sessionSec/60), s = state.sessionSec%60;
+            $('totalMinutes').textContent = m + ':' + String(s).padStart(2,'0');
+        },1000);
+    }
+}
+function pauseSession(){
+    state.running = false;
+    $('startBtn').textContent = 'Resume';
+    $('svgPhase').textContent = 'PAUSED';
+    $('svgCount').textContent = '◑';
+    $('svgHint').textContent = 'the moon waits patiently';
+    clearInterval(state.sessionTick); state.sessionTick = null;
+}
+function resetSession(){
+    pauseSession();
+    state.sessionSec=0; state.cycles=0; state.harmony=0;
+    $('startBtn').textContent='Begin Session';
+    $('totalMinutes').textContent='0:00'; $('cyclesCount').textContent='0';
+    $('harmV').textContent='0'; $('harmS').textContent='Begin breathing to tune your instrument.';
+    $('svgPhase').textContent='TAP THE MOON'; $('svgCount').textContent='◐'; $('svgHint').textContent='your practice awaits';
+    setProg(0);
+}
+function setProg(p){ $('progRing').setAttribute('stroke-dasharray', `${p} 100`); }
 
-            // Visual indicator for recommended mode
-            document.querySelectorAll('.mode-card').forEach(card => {
-                card.style.outline = card.dataset.mode === recommendedModes[period]
-                    ? '2px solid var(--gold)'
-                    : 'none';
-            });
+function completeCycle(){
+    state.cycles++; state.breathsToday++;
+    $('cyclesCount').textContent = state.cycles;
+    $('breathsToday').textContent = state.breathsToday;
+    addMoney(0.17);
+    state.harmony = Math.min(100, state.harmony + 3 + Math.floor(Math.random()*5));
+    $('harmV').textContent = state.harmony;
+    $('harmS').textContent = harmonyLine(state.harmony);
+    if (state.cycles % 3 === 0) earnStar();
+    persistDaily();
+}
+function harmonyLine(h){
+    if (h<20) return 'Beginning to sync…';
+    if (h<40) return 'Finding the tide.';
+    if (h<60) return 'Coherence rising like the moon.';
+    if (h<80) return 'Harmonious flow — the band is tight tonight.';
+    return 'Peak coherence · you and the coastline agree.';
+}
+function persistDaily(){
+    const today = new Date().toDateString();
+    if (state.lastDate !== today){
+        const y = new Date(); y.setDate(y.getDate()-1);
+        state.streak = (state.lastDate === y.toDateString()) ? state.streak+1 : 1;
+        state.lastDate = today;
+        store.set('streak', state.streak);
+        store.set('lastBreathDate', today);
+        $('streakValue').textContent = state.streak;
+        $('streakValue2').textContent = state.streak;
+    }
+    store.set('breathsToday', state.breathsToday);
+}
+
+function frame(now){
+    if (state.running){
+        const ph = phase();
+        const dur = ph.t*1000;
+        let t = (now - state.phaseStart)/dur;
+        if (t >= 1){
+            state.phaseIdx = (state.phaseIdx+1) % MODES[state.modeKey].phases.length;
+            if (state.phaseIdx === 0) completeCycle();
+            state.phaseStart = now;
+            chime(PHASE_NOTES[phase().n]);
+            t = 0;
         }
+        const p2 = phase();
+        // moon scale
+        const sc = PHASE_SCALE[p2.n];
+        if (sc){ currentScale = sc[0] + (sc[1]-sc[0])*easeIO(t); }
+        document.getElementById('moonGroup').style.setProperty('--breath', currentScale.toFixed(4));
+        // texts + ring
+        $('svgPhase').textContent = p2.n;
+        $('svgCount').textContent = Math.ceil(p2.t - t*p2.t);
+        $('svgHint').textContent = PHASE_HINTS[p2.n];
+        setProg(t*100);
+    }
+    drawWave(now);
+    requestAnimationFrame(frame);
+}
 
-        // Money counter
-        function updateMoney(amount = 0.001) {
-            state.money += amount;
-            localStorage.setItem('totalMoney', state.money.toString());
-            elements.moneyValue.textContent = state.money.toFixed(2);
-        }
+/* ── Harmony wave ────────────────────────────────────────── */
+function buildWave(){
+    const w = $('wave');
+    for (let i=0;i<44;i++){ const b=document.createElement('div'); b.className='wbar'; w.appendChild(b); }
+}
+function drawWave(now){
+    const bars = $('wave').children;
+    const energy = state.running ? (.35 + currentScale - .94) : .12;
+    for (let i=0;i<bars.length;i++){
+        const v = Math.sin(i*.42 + now/430) * Math.sin(i*.13 - now/900);
+        bars[i].style.height = Math.max(4, Math.abs(v) * 62 * energy + 4) + 'px';
+    }
+}
 
-        // Initialize money counter animation
-        function startMoneyCounter() {
-            // Passive earnings even when not breathing
-            setInterval(() => {
-                updateMoney(0.001);
-            }, 1000);
-        }
+/* ── Cosmic constellation ────────────────────────────────── */
+const CONSTELLATIONS = [
+    {name:'The Seeker', n:7},{name:'The Dreamer', n:9},{name:'The Creator', n:12},
+    {name:'The Sage', n:15},{name:'The Luminary', n:20}
+];
+function constellationFor(stars){
+    let acc=0;
+    for (const c of CONSTELLATIONS){ if (stars < acc + c.n) return {c, into: stars-acc}; acc += c.n; }
+    const last = CONSTELLATIONS[CONSTELLATIONS.length-1];
+    return {c:last, into:last.n};
+}
+let starLayout = [];
+function buildSky(){
+    const box = $('skyBox'); box.innerHTML=''; starLayout=[];
+    const {c, into} = constellationFor(state.stars);
+    for (let i=0;i<c.n;i++){
+        const x = 8+Math.random()*84, y = 12+Math.random()*70;
+        starLayout.push({x,y});
+        const s = document.createElement('div');
+        s.className = 'cStar' + (i<into?' lit':'');
+        s.style.left = x+'%'; s.style.top = y+'%';
+        box.appendChild(s);
+    }
+    for (let i=1;i<into;i++){
+        const a=starLayout[i-1], b=starLayout[i];
+        const line=document.createElement('div'); line.className='cLine';
+        const dx=(b.x-a.x), dy=(b.y-a.y);
+        const bw=box.clientWidth||560, bh=box.clientHeight||170;
+        const len=Math.hypot(dx*bw/100, dy*bh/100);
+        line.style.left=a.x+'%'; line.style.top=a.y+'%';
+        line.style.width=len+'px';
+        line.style.transform='rotate('+Math.atan2(dy*bh/100,dx*bw/100)+'rad)';
+        box.appendChild(line);
+    }
+    $('cName').textContent = c.name;
+    $('cProg').textContent = into + ' / ' + c.n + ' stars';
+}
+function earnStar(){
+    state.stars++; store.set('starsEarned', state.stars);
+    addMoney(1.11);
+    buildSky();
+    toast('✦ Star earned — the ' + constellationFor(state.stars).c.name + ' grows brighter.');
+}
 
-        // Affirmations
-        function getAffirmation() {
-            const period = getTimePeriod();
-            const periodAffirmations = affirmations[period];
-            return periodAffirmations[Math.floor(Math.random() * periodAffirmations.length)];
-        }
+/* ── Release Ritual ──────────────────────────────────────── */
+const RITUAL_LINES = [
+    'The moon accepted it without judgment. It always does.',
+    'Released. Notice how much lighter that sentence made you.',
+    'Gone — traded for $0.33 of emotional dividends.',
+    'The tide took it. The tide never brings those back.',
+    'It weighed more in your head than it did in the sky.'
+];
+function releaseRitual(){
+    const input = $('ritualInput');
+    const text = input.value.trim();
+    if (!text) { toast('Write something small. The moon takes any size.'); return; }
+    const rect = input.getBoundingClientRect();
+    const chars = text.split('');
+    chars.forEach((ch,i)=>{
+        if (ch===' ') return;
+        const s = document.createElement('span');
+        s.className='floatChar'; s.textContent=ch;
+        s.style.left=(rect.left + (i/chars.length)*rect.width)+'px';
+        s.style.top=rect.top+'px';
+        s.style.fontSize=(14+Math.random()*8)+'px';
+        document.body.appendChild(s);
+        const drift=(Math.random()-.5)*140;
+        s.animate([
+            { transform:'translate(0,0) rotate(0deg)', opacity:1 },
+            { transform:`translate(${drift}px, ${-(window.innerHeight*.5 + Math.random()*200)}px) rotate(${(Math.random()-.5)*120}deg)`, opacity:0 }
+        ], { duration:2200+Math.random()*1600, delay:i*45, easing:'cubic-bezier(.2,.6,.3,1)', fill:'forwards' })
+        .onfinish = ()=> s.remove();
+    });
+    input.value='';
+    addMoney(0.33);
+    chime(329.63);
+    const note = $('ritualNote');
+    note.style.opacity=0;
+    setTimeout(()=>{
+        note.textContent = RITUAL_LINES[Math.floor(Math.random()*RITUAL_LINES.length)];
+        note.style.opacity=1;
+    }, 700);
+}
 
-        function updateAffirmation() {
-            elements.affirmationText.style.opacity = '0';
-            setTimeout(() => {
-                elements.affirmationText.textContent = `"${getAffirmation()}"`;
-                elements.affirmationText.style.opacity = '1';
-            }, 300);
-        }
+/* ── Toast ───────────────────────────────────────────────── */
+let toastT=null;
+function toast(msg){
+    const t=$('toast'); t.textContent=msg; t.classList.add('show');
+    clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove('show'), 3600);
+}
 
-        // Breathing animation
-        function startBreathing() {
-            if (state.isRunning) return;
+/* ── Wiring ──────────────────────────────────────────────── */
+function toggleRun(){ state.running ? pauseSession() : startSession(); }
+$('startBtn').addEventListener('click', toggleRun);
+$('moonHit').addEventListener('click', toggleRun);
+$('resetBtn').addEventListener('click', resetSession);
+$('newAffirm').addEventListener('click', newAffirmation);
+$('ritualBtn').addEventListener('click', releaseRitual);
+$('ritualInput').addEventListener('keydown', e=>{ if(e.key==='Enter') releaseRitual(); });
+$('chimeBtn').addEventListener('click', ()=>{
+    state.chimes=!state.chimes; store.set('chimesOn',state.chimes);
+    $('chimeBtn').classList.toggle('on',state.chimes);
+    if (state.chimes) chime(523.25);
+});
+$('droneBtn').addEventListener('click', toggleDrone);
+document.querySelectorAll('.mode').forEach(m=>{
+    m.addEventListener('click', ()=>{
+        state.modeKey = m.dataset.mode;
+        state.phaseIdx = 0; state.phaseStart = performance.now();
+        document.querySelectorAll('.mode').forEach(x=>x.classList.toggle('active', x===m));
+    });
+});
+document.addEventListener('keydown', e=>{
+    if (e.code==='Space' && document.activeElement.tagName!=='INPUT'){ e.preventDefault(); toggleRun(); }
+});
 
-            state.isRunning = true;
-            state.currentPhase = 'inhale';
-            state.phaseTime = 0;
-            elements.startBtn.textContent = 'Pause';
+/* ── Boot ────────────────────────────────────────────────── */
+(function init(){
+    // day rollover
+    const today = new Date().toDateString();
+    if (state.lastDate && state.lastDate !== today){ state.breathsToday = 0; store.set('breathsToday',0); }
 
-            runBreathingCycle();
-        }
+    applyPeriod();
+    buildStars(); buildSunburst(); buildFlora(); buildWave(); buildSky();
+    newAffirmation();
 
-        function stopBreathing() {
-            state.isRunning = false;
-            state.currentPhase = 'idle';
-            elements.startBtn.textContent = 'Resume';
-            elements.breathCircle.className = 'breath-circle';
-            elements.breathText.textContent = 'PAUSED';
-            elements.breathTimer.textContent = '—';
-            elements.breathInstruction.textContent = 'Tap to continue';
-        }
+    $('moneyValue').textContent = state.money.toFixed(2);
+    $('breathsToday').textContent = state.breathsToday;
+    $('streakValue').textContent = state.streak;
+    $('streakValue2').textContent = state.streak;
+    $('chimeBtn').classList.toggle('on', state.chimes);
 
-        function runBreathingCycle() {
-            if (!state.isRunning) return;
+    setInterval(applyPeriod, 60000);
+    requestAnimationFrame(frame);
 
-            const pattern = breathingModes[state.currentMode].pattern;
-            const phases = ['inhale', 'hold1', 'exhale', 'hold2'];
-            const phaseNames = ['BREATHE IN', 'HOLD', 'BREATHE OUT', 'HOLD'];
-            const phaseInstructions = [
-                'Fill your lungs with peace',
-                'Let stillness embrace you',
-                'Release all tension',
-                'Find your center'
-            ];
-
-            const currentIndex = phases.indexOf(state.currentPhase);
-            const phaseDuration = pattern[currentIndex];
-
-            // Skip if phase duration is 0
-            if (phaseDuration === 0) {
-                state.currentPhase = phases[(currentIndex + 1) % 4];
-                if (state.currentPhase === 'inhale') {
-                    completeCycle();
-                }
-                runBreathingCycle();
-                return;
-            }
-
-            // Update UI
-            elements.breathText.textContent = phaseNames[currentIndex];
-            elements.breathTimer.textContent = phaseDuration - state.phaseTime;
-            elements.breathInstruction.textContent = phaseInstructions[currentIndex];
-
-            // Update circle animation
-            elements.breathCircle.className = 'breath-circle';
-            if (state.currentPhase === 'inhale') {
-                elements.breathCircle.classList.add('inhale');
-            } else if (state.currentPhase === 'exhale') {
-                elements.breathCircle.classList.add('exhale');
-            } else {
-                elements.breathCircle.classList.add('hold');
-            }
-
-            // Update harmony wave
-            updateHarmonyWave();
-
-            state.phaseTime++;
-            state.totalTime++;
-
-            // Update total time display
-            const minutes = Math.floor(state.totalTime / 60);
-            const seconds = state.totalTime % 60;
-            elements.totalMinutes.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
-
-            if (state.phaseTime >= phaseDuration) {
-                state.phaseTime = 0;
-                const nextIndex = (currentIndex + 1) % 4;
-                state.currentPhase = phases[nextIndex];
-
-                if (state.currentPhase === 'inhale') {
-                    completeCycle();
-                }
-            }
-
-            setTimeout(runBreathingCycle, 1000);
-        }
-
-        function completeCycle() {
-            state.cycles++;
-            state.breathsToday++;
-            elements.cyclesCount.textContent = state.cycles;
-            elements.breathsToday.textContent = state.breathsToday;
-
-            // Add money for completing cycle
-            updateMoney(0.17);
-
-            // Update harmony score
-            state.harmonyScore = Math.min(100, state.harmonyScore + Math.floor(Math.random() * 5) + 3);
-            elements.harmonyValue.textContent = state.harmonyScore;
-            updateHarmonyStatus();
-
-            // Check for star earning
-            if (state.cycles % 3 === 0) {
-                earnStar();
-            }
-
-            // Save to localStorage
-            const today = new Date().toDateString();
-            localStorage.setItem('breathsToday', state.breathsToday.toString());
-            localStorage.setItem('lastBreathDate', today);
-
-            // Update streak if new day
-            if (state.lastBreathDate !== today) {
-                const yesterday = new Date();
-                yesterday.setDate(yesterday.getDate() - 1);
-                if (state.lastBreathDate === yesterday.toDateString()) {
-                    state.streak++;
-                } else if (state.lastBreathDate !== today) {
-                    state.streak = 1;
-                }
-                localStorage.setItem('streak', state.streak.toString());
-                elements.streakValue.textContent = state.streak;
-            }
-        }
-
-        // Harmony wave visualization
-        function initHarmonyWave() {
-            elements.harmonyWave.innerHTML = '';
-            for (let i = 0; i < 40; i++) {
-                const bar = document.createElement('div');
-                bar.className = 'wave-bar';
-                bar.style.height = '5px';
-                elements.harmonyWave.appendChild(bar);
-            }
-        }
-
-        function updateHarmonyWave() {
-            const bars = elements.harmonyWave.querySelectorAll('.wave-bar');
-            bars.forEach((bar, i) => {
-                const baseHeight = 5;
-                const maxHeight = 60;
-                const phase = state.currentPhase;
-                let height;
-
-                if (phase === 'inhale') {
-                    const wave = Math.sin((i / 40) * Math.PI * 4 + Date.now() / 200);
-                    height = baseHeight + (wave + 1) * 0.5 * (maxHeight - baseHeight) * (state.phaseTime / 4);
-                } else if (phase === 'exhale') {
-                    const wave = Math.sin((i / 40) * Math.PI * 4 + Date.now() / 300);
-                    height = baseHeight + (wave + 1) * 0.3 * (maxHeight - baseHeight);
-                } else if (phase === 'hold1' || phase === 'hold2') {
-                    const wave = Math.sin((i / 40) * Math.PI * 2 + Date.now() / 500);
-                    height = baseHeight + (wave + 1) * 0.4 * (maxHeight - baseHeight);
-                } else {
-                    height = baseHeight + Math.random() * 10;
-                }
-
-                bar.style.height = `${height}px`;
-            });
-        }
-
-        function updateHarmonyStatus() {
-            let status;
-            if (state.harmonyScore < 20) {
-                status = 'Beginning to sync...';
-            } else if (state.harmonyScore < 40) {
-                status = 'Finding your rhythm';
-            } else if (state.harmonyScore < 60) {
-                status = 'Coherence developing';
-            } else if (state.harmonyScore < 80) {
-                status = 'Harmonious flow achieved';
-            } else {
-                status = 'Peak coherence · Transcendent state';
-            }
-            elements.harmonyStatus.textContent = status;
-        }
-
-        // Cosmic Achievement System
-        function initStars() {
-            elements.starsContainer.innerHTML = '';
-            const currentConstellation = getCurrentConstellation();
-
-            for (let i = 0; i < currentConstellation.stars; i++) {
-                const star = document.createElement('div');
-                star.className = 'star' + (i < state.starsEarned % currentConstellation.stars ? ' earned' : '');
-                star.style.left = `${10 + Math.random() * 80}%`;
-                star.style.top = `${10 + Math.random() * 60}%`;
-                elements.starsContainer.appendChild(star);
-            }
-
-            elements.constellationName.textContent = currentConstellation.name;
-            const starsInConstellation = state.starsEarned % currentConstellation.stars ||
-                                         (state.starsEarned >= currentConstellation.stars ? currentConstellation.stars : 0);
-            elements.constellationProgress.textContent = `${starsInConstellation}/${currentConstellation.stars} stars collected`;
-        }
-
-        function getCurrentConstellation() {
-            let totalStars = 0;
-            for (const constellation of constellations) {
-                totalStars += constellation.stars;
-                if (state.starsEarned < totalStars) {
-                    return constellation;
-                }
-            }
-            return constellations[constellations.length - 1];
-        }
-
-        function earnStar() {
-            state.starsEarned++;
-            localStorage.setItem('starsEarned', state.starsEarned.toString());
-            initStars();
-            showNotification('✨ New star earned! Your cosmic journey continues.');
-        }
-
-        // Notifications
-        function showNotification(message) {
-            elements.notification.textContent = message;
-            elements.notification.classList.add('show');
-            setTimeout(() => {
-                elements.notification.classList.remove('show');
-            }, 3000);
-        }
-
-        // Mode selection
-        function selectMode(mode) {
-            state.currentMode = mode;
-            document.querySelectorAll('.mode-card').forEach(card => {
-                card.classList.toggle('active', card.dataset.mode === mode);
-            });
-
-            if (state.isRunning) {
-                state.phaseTime = 0;
-                state.currentPhase = 'inhale';
-            }
-        }
-
-        // Reset session
-        function resetSession() {
-            state.isRunning = false;
-            state.currentPhase = 'idle';
-            state.phaseTime = 0;
-            state.totalTime = 0;
-            state.cycles = 0;
-            state.harmonyScore = 0;
-
-            elements.cyclesCount.textContent = '0';
-            elements.totalMinutes.textContent = '0:00';
-            elements.harmonyValue.textContent = '0';
-            elements.harmonyStatus.textContent = 'Begin breathing to measure harmony';
-            elements.startBtn.textContent = 'Begin Session';
-            elements.breathCircle.className = 'breath-circle';
-            elements.breathText.textContent = 'TAP TO BEGIN';
-            elements.breathTimer.textContent = '—';
-            elements.breathInstruction.textContent = 'Your journey awaits';
-
-            initHarmonyWave();
-        }
-
-        // Event Listeners
-        elements.startBtn.addEventListener('click', () => {
-            if (state.isRunning) {
-                stopBreathing();
-            } else {
-                startBreathing();
-            }
-        });
-
-        elements.breathCircle.addEventListener('click', () => {
-            if (state.isRunning) {
-                stopBreathing();
-            } else {
-                startBreathing();
-            }
-        });
-
-        elements.resetBtn.addEventListener('click', resetSession);
-
-        elements.newAffirmation.addEventListener('click', updateAffirmation);
-
-        elements.soundToggle.addEventListener('click', () => {
-            state.soundEnabled = !state.soundEnabled;
-            localStorage.setItem('soundEnabled', state.soundEnabled.toString());
-            elements.soundToggle.textContent = state.soundEnabled ? '🔔' : '🔕';
-        });
-
-        document.querySelectorAll('.mode-card').forEach(card => {
-            card.addEventListener('click', () => selectMode(card.dataset.mode));
-        });
-
-        // Check for new day and reset daily stats
-        function checkDayReset() {
-            const today = new Date().toDateString();
-            if (state.lastBreathDate && state.lastBreathDate !== today) {
-                state.breathsToday = 0;
-                localStorage.setItem('breathsToday', '0');
-            }
-            state.lastBreathDate = today;
-        }
-
-        // Initialize
-        function init() {
-            checkDayReset();
-            updateTheme();
-            updateAffirmation();
-            initStars();
-            initHarmonyWave();
-            startMoneyCounter();
-
-            elements.breathsToday.textContent = state.breathsToday;
-            elements.moneyValue.textContent = state.money.toFixed(2);
-            elements.streakValue.textContent = state.streak;
-            elements.soundToggle.textContent = state.soundEnabled ? '🔔' : '🔕';
-
-            // Update theme every minute
-            setInterval(updateTheme, 60000);
-
-            // Animate harmony wave even when idle
-            setInterval(() => {
-                if (!state.isRunning) {
-                    updateHarmonyWave();
-                }
-            }, 100);
-
-            // Welcome message based on time
-            const period = getTimePeriod();
-            const welcomeMessages = {
-                dawn: 'Good morning, radiant soul. The day awaits your light.',
-                day: 'Welcome back. Your midday reset begins now.',
-                dusk: 'The golden hour beckons. Time to decompress.',
-                night: 'Peaceful evening. Let the stars guide your breath.'
-            };
-
-            setTimeout(() => {
-                showNotification(welcomeMessages[period]);
-            }, 1000);
-        }
-
-        // Start the app
-        init();
-    </script>
+    setTimeout(()=>toast(PERIOD_META[period()].hello), 900);
+})();
+</script>
 </body>
 </html>
