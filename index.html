@@ -251,6 +251,47 @@ main { position:relative; z-index:3; }
 .harmL { font-size:.6rem; letter-spacing:.26em; text-transform:uppercase; color:var(--ink-dim); }
 .harmS { text-align:center; font-size:.72rem; color:var(--copper); font-style:italic; margin-top:10px; }
 
+/* ── Moon Chime Garden ───────────────────────────────────── */
+.garden {
+    position:relative; height:250px; padding-top:34px;
+    display:flex; justify-content:center; align-items:flex-start; gap:20px;
+}
+.gardenBar {
+    position:absolute; top:18px; left:6%; right:6%; height:7px;
+    background:linear-gradient(180deg,#f6ecc8,#e8cf8a 30%,var(--copper));
+    border-radius:3px; box-shadow:0 3px 10px rgba(0,0,0,.45);
+}
+.gardenBar::before,.gardenBar::after {
+    content:'◆'; position:absolute; top:-16px; color:var(--gold); font-size:.6rem;
+}
+.gardenBar::before{ left:-4px; } .gardenBar::after{ right:-4px; }
+.rod {
+    width:15px; border-radius:8px; cursor:pointer; position:relative;
+    transform-origin:top center; --amp:5deg;
+    background:linear-gradient(90deg,#6e5222,#e8cf8a 32%,#faf2d4 46%,#c9a24b 62%,#5c4419);
+    box-shadow:inset 0 0 5px rgba(0,0,0,.35), 0 5px 16px rgba(0,0,0,.35);
+    transition:filter .25s;
+}
+.rod::before {
+    content:''; position:absolute; top:-16px; left:50%; width:1px; height:16px;
+    background:rgba(240,223,174,.55);
+}
+.rod::after {
+    content:''; position:absolute; bottom:7px; left:3px; right:3px; height:1px;
+    background:rgba(60,40,10,.5); box-shadow:0 -5px 0 rgba(60,40,10,.35);
+}
+.rod:hover { filter:brightness(1.18); }
+.rod.ring { animation:sway 2.6s cubic-bezier(.2,.6,.3,1); box-shadow:inset 0 0 5px rgba(0,0,0,.35), 0 0 22px rgba(212,175,55,.55); }
+@keyframes sway {
+    0%{transform:rotate(0);} 10%{transform:rotate(var(--amp));}
+    28%{transform:rotate(calc(var(--amp) * -.55));} 48%{transform:rotate(calc(var(--amp) * .3));}
+    68%{transform:rotate(calc(var(--amp) * -.12));} 100%{transform:rotate(0);}
+}
+.gardenFoot { display:flex; align-items:center; justify-content:space-between; gap:14px; flex-wrap:wrap; }
+.gardenScale { font-size:.6rem; letter-spacing:.24em; text-transform:uppercase; color:var(--ink-dim); }
+.gardenHint { text-align:center; font-size:.66rem; color:var(--ink-dim); font-style:italic; margin-top:12px; line-height:1.7; }
+.chipBtn.on { background:var(--accent); color:#1c1636; }
+
 /* ── Audio buttons / toast / footer ──────────────────────── */
 .audioDock { position:fixed; bottom:18px; right:18px; z-index:10; display:flex; flex-direction:column; gap:10px; }
 .dockBtn {
@@ -421,6 +462,18 @@ footer { position:relative; z-index:3; text-align:center; padding:0 20px 46px; f
             <p class="ritualNote" id="ritualNote">Whatever you write is never stored — it is given to the moon, letter by letter.</p>
         </section>
 
+        <!-- Moon Chime Garden -->
+        <section class="panel">
+            <h2 class="panelTitle">Moon Chime Garden</h2>
+            <div class="panelRule"><span>♪</span></div>
+            <div class="garden" id="garden"></div>
+            <div class="gardenFoot">
+                <span class="gardenScale" id="gardenScale">tuned to the hour</span>
+                <button class="chipBtn" id="breezeBtn">Let the Breeze Play</button>
+            </div>
+            <p class="gardenHint">Seven brass rods, retuned as the sky changes. Strike them yourself —<br>or invite the breeze, and notice how your exhale stirs it.</p>
+        </section>
+
         <!-- Cosmic Journey -->
         <section class="panel">
             <h2 class="panelTitle">Cosmic Journey</h2>
@@ -494,7 +547,6 @@ const PHASE_HINTS = {
     INHALE:'draw in the light', HOLD:'let stillness settle', EXHALE:'give it all back'
 };
 const PHASE_SCALE = { INHALE:[0.94,1.10], HOLD:null, EXHALE:[1.10,0.94] };
-const PHASE_NOTES = { INHALE:523.25, HOLD:659.25, EXHALE:392.0 };
 
 /* ── Time of day ─────────────────────────────────────────── */
 function period(){
@@ -510,6 +562,7 @@ const PERIOD_META = {
     dusk:{ label:'El Segundo Golden Hour', suggest:'calm', hello:'Golden hour on the coast. Time to let the day dissolve.' },
     night:{ label:'Night Reflection', suggest:'sleep', hello:'The moon kept your seat warm. Settle in.' }
 };
+let lastPeriod = null;
 function applyPeriod(){
     const p = period();
     document.body.dataset.period = p;
@@ -517,6 +570,7 @@ function applyPeriod(){
     document.querySelectorAll('.mode').forEach(m=>{
         m.classList.toggle('suggested', m.dataset.mode === PERIOD_META[p].suggest);
     });
+    if (p !== lastPeriod){ lastPeriod = p; buildGarden(); }   // retune the chimes to the hour
 }
 
 /* ── Affirmations (clever, per period) ───────────────────── */
@@ -564,21 +618,121 @@ function newAffirmation(){
     }, 350);
 }
 
-/* ── Web Audio ───────────────────────────────────────────── */
-let AC = null, droneNodes = null;
-function audio(){ if(!AC) AC = new (window.AudioContext||window.webkitAudioContext)(); if(AC.state==='suspended') AC.resume(); return AC; }
+/* ── Web Audio: a real bell voice ────────────────────────── */
+let AC = null, droneNodes = null, dryBus = null, reverbBus = null;
+function audio(){
+    if (!AC){
+        AC = new (window.AudioContext||window.webkitAudioContext)();
+        dryBus = AC.createGain(); dryBus.gain.value = .85;
+        dryBus.connect(AC.destination);
+        // synthesized hall: exponentially decaying stereo noise as impulse
+        const conv = AC.createConvolver();
+        const sec = 3.8, rate = AC.sampleRate, len = Math.floor(rate*sec);
+        const buf = AC.createBuffer(2, len, rate);
+        for (let c=0; c<2; c++){
+            const d = buf.getChannelData(c);
+            for (let i=0; i<len; i++) d[i] = (Math.random()*2-1) * Math.pow(1 - i/len, 2.6);
+        }
+        conv.buffer = buf;
+        const wet = AC.createGain(); wet.gain.value = .45;
+        conv.connect(wet); wet.connect(AC.destination);
+        reverbBus = conv;
+    }
+    if (AC.state==='suspended') AC.resume();
+    return AC;
+}
+/* Tubular-bell partials: [ratio, amplitude, decay seconds] */
+const BELL_PARTIALS = [
+    [1.0,   1.0, 5.2], [2.001, .52, 3.8], [2.76, .30, 2.9],
+    [4.07,  .16, 2.0], [5.40,  .09, 1.5], [6.79, .05, 1.05]
+];
+function bell(freq, vel=.7, pan=0){
+    const ac = audio(), t = ac.currentTime;
+    const out = ac.createGain(); out.gain.value = 1;
+    let tail = out;
+    if (ac.createStereoPanner){ tail = ac.createStereoPanner(); tail.pan.value = pan; out.connect(tail); }
+    tail.connect(dryBus); tail.connect(reverbBus);
+    BELL_PARTIALS.forEach(([ratio, amp, dec], i)=>{
+        const o = ac.createOscillator(); o.type='sine';
+        o.frequency.value = freq * ratio * (1 + (Math.random()-.5)*.0025); // human detune
+        const g = ac.createGain();
+        const level = amp * vel * .15 * (i<2 ? 1 : .4 + vel*.7);           // brightness follows velocity
+        const decay = dec * (.65 + vel*.55);
+        g.gain.setValueAtTime(0, t);
+        g.gain.linearRampToValueAtTime(level, t + .006 + i*.003);
+        g.gain.exponentialRampToValueAtTime(.0001, t + decay);
+        o.connect(g); g.connect(out);
+        o.start(t); o.stop(t + decay + .1);
+    });
+    // soft mallet strike: a breath of filtered noise
+    const nLen = Math.floor(ac.sampleRate * .03);
+    const nBuf = ac.createBuffer(1, nLen, ac.sampleRate);
+    const nd = nBuf.getChannelData(0);
+    for (let i=0;i<nLen;i++) nd[i] = (Math.random()*2-1) * (1 - i/nLen);
+    const n = ac.createBufferSource(); n.buffer = nBuf;
+    const nf = ac.createBiquadFilter(); nf.type='bandpass'; nf.frequency.value = freq*3; nf.Q.value = 1.2;
+    const ng = ac.createGain(); ng.gain.value = vel * .05;
+    n.connect(nf); nf.connect(ng); ng.connect(out);
+    n.start(t);
+}
 function chime(freq){
     if (!state.chimes) return;
-    const ac = audio(), t = ac.currentTime;
-    const o = ac.createOscillator(), g = ac.createGain();
-    o.type = 'sine'; o.frequency.value = freq;
-    const o2 = ac.createOscillator(); o2.type='sine'; o2.frequency.value = freq*2.01;
-    const g2 = ac.createGain(); g2.gain.value = .25;
-    g.gain.setValueAtTime(0, t);
-    g.gain.linearRampToValueAtTime(.14, t+.02);
-    g.gain.exponentialRampToValueAtTime(.0001, t+1.6);
-    o.connect(g); o2.connect(g2); g2.connect(g); g.connect(ac.destination);
-    o.start(t); o2.start(t); o.stop(t+1.7); o2.stop(t+1.7);
+    bell(freq, .72, (Math.random()-.5)*.5);
+}
+
+/* ── Moon Chime Garden ───────────────────────────────────── */
+const SCALES = {
+    dawn:  { name:'E major pentatonic', notes:[329.63,369.99,415.30,493.88,554.37,659.26,739.99] },
+    day:   { name:'G major pentatonic', notes:[392.00,440.00,493.88,587.33,659.26,783.99,880.00] },
+    dusk:  { name:'D dorian amber',     notes:[293.66,329.63,392.00,440.00,523.25,587.33,659.26] },
+    night: { name:'A hirajoshi moonlit',notes:[220.00,246.94,261.63,329.63,349.23,440.00,493.88] }
+};
+function phaseNote(name){
+    const sc = SCALES[period()].notes;
+    return { INHALE:sc[3], HOLD:sc[5], EXHALE:sc[1] }[name] || sc[0];
+}
+let breezeOn = false, breezeTimer = null;
+function buildGarden(){
+    const g = $('garden'); g.innerHTML = '';
+    const bar = document.createElement('div'); bar.className='gardenBar'; g.appendChild(bar);
+    SCALES[period()].notes.forEach((f,i)=>{
+        const r = document.createElement('div');
+        r.className='rod';
+        r.style.height = (200 - i*15) + 'px';   // longest rod sings lowest
+        r.dataset.i = i;
+        r.addEventListener('click', ()=>{ strikeRod(i, .65 + Math.random()*.3); addMoney(0.02); });
+        g.appendChild(r);
+    });
+    $('gardenScale').textContent = SCALES[period()].name;
+}
+function strikeRod(i, vel){
+    const rods = $('garden').querySelectorAll('.rod');
+    const rod = rods[i]; if (!rod) return;
+    bell(SCALES[period()].notes[i], vel, (i/6*2-1)*.7);
+    rod.style.setProperty('--amp', (3 + vel*9).toFixed(1) + 'deg');
+    rod.classList.remove('ring'); void rod.offsetWidth; rod.classList.add('ring');
+}
+function scheduleBreeze(){
+    if (!breezeOn) return;
+    const exhaling = state.running && phase().n === 'EXHALE';
+    const delay = exhaling ? 240 + Math.random()*520 : 600 + Math.random()*2800;
+    breezeTimer = setTimeout(()=>{
+        const i = Math.floor(Math.random()*7);
+        strikeRod(i, exhaling ? .32 + Math.random()*.38 : .12 + Math.random()*.26);
+        if (Math.random() < .35){       // a gust brushes a neighbor
+            setTimeout(()=> strikeRod(Math.min(6, i+1+Math.floor(Math.random()*2)), .12 + Math.random()*.18),
+                       130 + Math.random()*240);
+        }
+        scheduleBreeze();
+    }, delay);
+}
+function toggleBreeze(){
+    audio();
+    breezeOn = !breezeOn;
+    clearTimeout(breezeTimer);
+    $('breezeBtn').classList.toggle('on', breezeOn);
+    $('breezeBtn').textContent = breezeOn ? 'Still the Breeze' : 'Let the Breeze Play';
+    if (breezeOn){ strikeRod(2, .3); scheduleBreeze(); }
 }
 function toggleDrone(){
     const ac = audio();
@@ -708,7 +862,7 @@ function startSession(){
     state.phaseIdx = 0;
     state.phaseStart = performance.now();
     $('startBtn').textContent = 'Pause';
-    chime(PHASE_NOTES[phase().n]);
+    chime(phaseNote(phase().n));
     if (!state.sessionTick){
         state.sessionTick = setInterval(()=>{
             state.sessionSec++;
@@ -777,7 +931,7 @@ function frame(now){
             state.phaseIdx = (state.phaseIdx+1) % MODES[state.modeKey].phases.length;
             if (state.phaseIdx === 0) completeCycle();
             state.phaseStart = now;
-            chime(PHASE_NOTES[phase().n]);
+            chime(phaseNote(phase().n));
             t = 0;
         }
         const p2 = phase();
@@ -850,6 +1004,10 @@ function earnStar(){
     state.stars++; store.set('starsEarned', state.stars);
     addMoney(1.11);
     buildSky();
+    if (state.chimes){                          // a small ascending flourish for the new star
+        const sc = SCALES[period()].notes;
+        [1,3,5].forEach((n,k)=> setTimeout(()=> bell(sc[n], .38, (k-1)*.5), k*150));
+    }
     toast('✦ Star earned — the ' + constellationFor(state.stars).c.name + ' grows brighter.');
 }
 
@@ -914,6 +1072,7 @@ $('chimeBtn').addEventListener('click', ()=>{
     if (state.chimes) chime(523.25);
 });
 $('droneBtn').addEventListener('click', toggleDrone);
+$('breezeBtn').addEventListener('click', toggleBreeze);
 document.querySelectorAll('.mode').forEach(m=>{
     m.addEventListener('click', ()=>{
         state.modeKey = m.dataset.mode;

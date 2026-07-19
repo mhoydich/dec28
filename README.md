@@ -33,7 +33,8 @@ Tap the moon (or press **Space**) to begin. A golden progress arc traces each ph
 - **Cosmic Journey** — earn stars every 3 cycles and connect them into constellations: The Seeker → The Dreamer → The Creator → The Sage → The Luminary. Daily streak included.
 - **Harmony Index** — a live coherence waveform that breathes with you and scores your session 0–100.
 - **Daily Wisdom** — clever affirmations tuned to the time of day.
-- **Sound** — Web Audio phase chimes (♪) and an optional low ambient drone (≋). No audio files; everything is synthesized.
+- **Moon Chime Garden** — seven brass rods synthesized as real tubular bells (six inharmonic partials, velocity-sensitive brightness, a mallet-noise strike, and a generated convolution hall). Strike them yourself, or *Let the Breeze Play* — a generative wind that rings them in loose gusts, and blows noticeably harder during your exhale. The rods retune to a different scale each period of the day: E major pentatonic at dawn, G major pentatonic at midday, D dorian at golden hour, A hirajoshi at night.
+- **Sound** — phase chimes (♪) now ring through the same bell voice, pitched from the current hour's scale, plus an optional low ambient drone (≋). No audio files; everything is synthesized.
 
 ## Persistence
 
