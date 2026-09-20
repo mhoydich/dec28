@@ -255,6 +255,7 @@ main { position:relative; z-index:3; }
 .garden {
     position:relative; height:250px; padding-top:34px;
     display:flex; justify-content:center; align-items:flex-start; gap:20px;
+    user-select:none; -webkit-user-select:none; touch-action:pan-y;
 }
 .gardenBar {
     position:absolute; top:18px; left:6%; right:6%; height:7px;
@@ -471,7 +472,7 @@ footer { position:relative; z-index:3; text-align:center; padding:0 20px 46px; f
                 <span class="gardenScale" id="gardenScale">tuned to the hour</span>
                 <button class="chipBtn" id="breezeBtn">Let the Breeze Play</button>
             </div>
-            <p class="gardenHint">Seven brass rods, retuned as the sky changes. Strike them yourself —<br>or invite the breeze, and notice how your exhale stirs it.</p>
+            <p class="gardenHint">Seven brass rods, retuned as the sky changes. Strike one, or drag across them to strum —<br>or invite the breeze: it gusts and lulls like real wind, and leans on your exhale.</p>
         </section>
 
         <!-- Cosmic Journey -->
@@ -618,62 +619,87 @@ function newAffirmation(){
     }, 350);
 }
 
-/* ── Web Audio: a real bell voice ────────────────────────── */
-let AC = null, droneNodes = null, dryBus = null, reverbBus = null;
+/* ── Web Audio: the bell voice ───────────────────────────── */
+/* Built as a pure graph (makeBus / bellInto) so the same code
+   renders through an OfflineAudioContext for testing. */
+let AC = null, droneNodes = null, BUS = null;
+function makeBus(ctx){
+    // gentle glue so overlapping bells bloom instead of clip
+    const comp = ctx.createDynamicsCompressor();
+    comp.threshold.value = -18; comp.knee.value = 24; comp.ratio.value = 4;
+    comp.attack.value = .003; comp.release.value = .35;
+    comp.connect(ctx.destination);
+    const dry = ctx.createGain(); dry.gain.value = .8; dry.connect(comp);
+    // synthesized hall: decaying noise impulse, one-pole lowpassed so the
+    // tail is warm instead of hissy
+    const conv = ctx.createConvolver();
+    const sec = 4.2, rate = ctx.sampleRate, len = Math.floor(rate*sec);
+    const buf = ctx.createBuffer(2, len, rate);
+    for (let c=0; c<2; c++){
+        const d = buf.getChannelData(c); let y = 0;
+        for (let i=0; i<len; i++){
+            const x = (Math.random()*2-1) * Math.pow(1 - i/len, 2.8);
+            y += .12 * (x - y);
+            d[i] = y * 3;
+        }
+    }
+    conv.buffer = buf;
+    const wet = ctx.createGain(); wet.gain.value = .55;
+    conv.connect(wet); wet.connect(comp);
+    return { dry, verb: conv, comp };
+}
 function audio(){
     if (!AC){
         AC = new (window.AudioContext||window.webkitAudioContext)();
-        dryBus = AC.createGain(); dryBus.gain.value = .85;
-        dryBus.connect(AC.destination);
-        // synthesized hall: exponentially decaying stereo noise as impulse
-        const conv = AC.createConvolver();
-        const sec = 3.8, rate = AC.sampleRate, len = Math.floor(rate*sec);
-        const buf = AC.createBuffer(2, len, rate);
-        for (let c=0; c<2; c++){
-            const d = buf.getChannelData(c);
-            for (let i=0; i<len; i++) d[i] = (Math.random()*2-1) * Math.pow(1 - i/len, 2.6);
-        }
-        conv.buffer = buf;
-        const wet = AC.createGain(); wet.gain.value = .45;
-        conv.connect(wet); wet.connect(AC.destination);
-        reverbBus = conv;
+        BUS = makeBus(AC);
     }
     if (AC.state==='suspended') AC.resume();
     return AC;
 }
-/* Tubular-bell partials: [ratio, amplitude, decay seconds] */
+/* Partials: [ratio, amplitude, decay seconds].
+   0.5 is a soft sub-octave hum for warmth; 2.001 gets a slow shimmer. */
 const BELL_PARTIALS = [
-    [1.0,   1.0, 5.2], [2.001, .52, 3.8], [2.76, .30, 2.9],
-    [4.07,  .16, 2.0], [5.40,  .09, 1.5], [6.79, .05, 1.05]
+    [0.5,   .10, 5.5], [1.0,  1.0, 6.2], [2.001, .40, 4.6],
+    [2.76,  .20, 3.2], [4.07, .09, 2.2], [5.40, .045, 1.5]
 ];
-function bell(freq, vel=.7, pan=0){
-    const ac = audio(), t = ac.currentTime;
-    const out = ac.createGain(); out.gain.value = 1;
+function bellInto(ctx, bus, freq, vel, pan, when){
+    const t = (when !== undefined) ? when : ctx.currentTime;
+    const out = ctx.createGain(); out.gain.value = 1;
     let tail = out;
-    if (ac.createStereoPanner){ tail = ac.createStereoPanner(); tail.pan.value = pan; out.connect(tail); }
-    tail.connect(dryBus); tail.connect(reverbBus);
+    if (ctx.createStereoPanner){ tail = ctx.createStereoPanner(); tail.pan.value = pan; out.connect(tail); }
+    tail.connect(bus.dry); tail.connect(bus.verb);
     BELL_PARTIALS.forEach(([ratio, amp, dec], i)=>{
-        const o = ac.createOscillator(); o.type='sine';
-        o.frequency.value = freq * ratio * (1 + (Math.random()-.5)*.0025); // human detune
-        const g = ac.createGain();
-        const level = amp * vel * .15 * (i<2 ? 1 : .4 + vel*.7);           // brightness follows velocity
-        const decay = dec * (.65 + vel*.55);
+        const o = ctx.createOscillator(); o.type='sine';
+        o.frequency.value = freq * ratio * (1 + (Math.random()-.5)*.002);   // human detune
+        const g = ctx.createGain();
+        const level = amp * vel * .14 * (i<3 ? 1 : .35 + vel*.65);          // brightness follows touch
+        const decay = dec * (.6 + vel*.55);
         g.gain.setValueAtTime(0, t);
-        g.gain.linearRampToValueAtTime(level, t + .006 + i*.003);
+        g.gain.linearRampToValueAtTime(level, t + .012 + i*.004);           // soft mallet, not a click
         g.gain.exponentialRampToValueAtTime(.0001, t + decay);
         o.connect(g); g.connect(out);
+        if (ratio === 2.001){                                               // the shimmer
+            const lfo = ctx.createOscillator(); lfo.frequency.value = 4.2 + Math.random()*1.6;
+            const lg = ctx.createGain(); lg.gain.value = level * .3;
+            lfo.connect(lg); lg.connect(g.gain);
+            lfo.start(t); lfo.stop(t + decay);
+        }
         o.start(t); o.stop(t + decay + .1);
     });
-    // soft mallet strike: a breath of filtered noise
-    const nLen = Math.floor(ac.sampleRate * .03);
-    const nBuf = ac.createBuffer(1, nLen, ac.sampleRate);
+    // mallet contact: a whisper of bandpassed noise
+    const nLen = Math.floor(ctx.sampleRate * .025);
+    const nBuf = ctx.createBuffer(1, nLen, ctx.sampleRate);
     const nd = nBuf.getChannelData(0);
     for (let i=0;i<nLen;i++) nd[i] = (Math.random()*2-1) * (1 - i/nLen);
-    const n = ac.createBufferSource(); n.buffer = nBuf;
-    const nf = ac.createBiquadFilter(); nf.type='bandpass'; nf.frequency.value = freq*3; nf.Q.value = 1.2;
-    const ng = ac.createGain(); ng.gain.value = vel * .05;
+    const n = ctx.createBufferSource(); n.buffer = nBuf;
+    const nf = ctx.createBiquadFilter(); nf.type='bandpass'; nf.frequency.value = freq*3; nf.Q.value = 2;
+    const ng = ctx.createGain(); ng.gain.value = vel * .035;
     n.connect(nf); nf.connect(ng); ng.connect(out);
     n.start(t);
+}
+function bell(freq, vel=.7, pan=0){
+    const ac = audio();
+    bellInto(ac, BUS, freq, vel, pan);
 }
 function chime(freq){
     if (!state.chimes) return;
@@ -691,7 +717,7 @@ function phaseNote(name){
     const sc = SCALES[period()].notes;
     return { INHALE:sc[3], HOLD:sc[5], EXHALE:sc[1] }[name] || sc[0];
 }
-let breezeOn = false, breezeTimer = null;
+let breezeOn = false, breezeTimer = null, strumming = false;
 function buildGarden(){
     const g = $('garden'); g.innerHTML = '';
     const bar = document.createElement('div'); bar.className='gardenBar'; g.appendChild(bar);
@@ -701,10 +727,15 @@ function buildGarden(){
         r.style.height = (200 - i*15) + 'px';   // longest rod sings lowest
         r.dataset.i = i;
         r.addEventListener('click', ()=>{ strikeRod(i, .65 + Math.random()*.3); addMoney(0.02); });
+        r.addEventListener('pointerenter', ()=>{  // drag across the rods to strum
+            if (strumming){ strikeRod(i, .45 + Math.random()*.25); addMoney(0.02); }
+        });
         g.appendChild(r);
     });
+    g.onpointerdown = ()=>{ strumming = true; };
     $('gardenScale').textContent = SCALES[period()].name;
 }
+window.addEventListener('pointerup', ()=>{ strumming = false; });
 function strikeRod(i, vel){
     const rods = $('garden').querySelectorAll('.rod');
     const rod = rods[i]; if (!rod) return;
@@ -712,16 +743,27 @@ function strikeRod(i, vel){
     rod.style.setProperty('--amp', (3 + vel*9).toFixed(1) + 'deg');
     rod.classList.remove('ring'); void rod.offsetWidth; rod.classList.add('ring');
 }
+/* The breeze is a smooth wind level, not a coin flip: layered slow sines
+   give calm spells and gusts, a random walk keeps note choices melodic,
+   and a running exhale leans on the wind. */
+let windSeed = Math.random()*1000, breezeNote = 3;
+function windLevel(){
+    const t = Date.now()/1000;
+    const w = .5 + .5*Math.sin(t*.11 + windSeed) * Math.sin(t*.043 + windSeed*1.7);
+    const exhaling = state.running && phase().n === 'EXHALE';
+    return Math.min(1, w * (exhaling ? 1.8 : 1) + (exhaling ? .25 : 0));
+}
 function scheduleBreeze(){
     if (!breezeOn) return;
-    const exhaling = state.running && phase().n === 'EXHALE';
-    const delay = exhaling ? 240 + Math.random()*520 : 600 + Math.random()*2800;
+    const w = windLevel();
+    const delay = 260 + (1 - w) * 3200 * (0.5 + Math.random());
     breezeTimer = setTimeout(()=>{
-        const i = Math.floor(Math.random()*7);
-        strikeRod(i, exhaling ? .32 + Math.random()*.38 : .12 + Math.random()*.26);
-        if (Math.random() < .35){       // a gust brushes a neighbor
-            setTimeout(()=> strikeRod(Math.min(6, i+1+Math.floor(Math.random()*2)), .12 + Math.random()*.18),
-                       130 + Math.random()*240);
+        const w2 = windLevel();
+        breezeNote = Math.max(0, Math.min(6, breezeNote + Math.round((Math.random()-.5)*4)));
+        strikeRod(breezeNote, .1 + w2*.42 + Math.random()*.08);
+        if (Math.random() < w2*.55){          // gusts brush a neighbor, softly
+            const n2 = Math.max(0, Math.min(6, breezeNote + (Math.random()<.5?-1:1)));
+            setTimeout(()=> strikeRod(n2, .08 + w2*.22), 140 + Math.random()*260);
         }
         scheduleBreeze();
     }, delay);
@@ -750,7 +792,7 @@ function toggleDrone(){
         lfo.connect(lfoG); lfoG.connect(f.frequency);
         const g = ac.createGain(); g.gain.setValueAtTime(0.0001, ac.currentTime);
         g.gain.linearRampToValueAtTime(.055, ac.currentTime+2.5);
-        o1.connect(f); o2.connect(f); f.connect(g); g.connect(ac.destination);
+        o1.connect(f); o2.connect(f); f.connect(g); g.connect(BUS.comp);
         o1.start(); o2.start(); lfo.start();
         droneNodes = {o1,o2,lfo,g}; state.drone = true;
     }
