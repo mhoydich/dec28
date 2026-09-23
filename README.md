@@ -1,45 +1,32 @@
-# SERENITY · El Segundo · Est. 2025
+# Serenity · El Segundo Dunes
 
-An Art Deco, mid-century-modern breathing & meditation app where **the moon itself is your breathing guide** — it swells on your inhale and softens on your exhale, inside a living, dithered coastal landscape.
+A breathing and meditation app where the whole landscape breathes with you. A big stippled moon swells as you breathe in and settles as you breathe out, and the dune grass leans with it. The scene is painted live on a canvas in the grainy risograph style of the original reference print.
 
-Open `index.html` in any modern browser. No build, no dependencies, no data leaves your machine.
+Open `index.html` in any modern browser. There's no build step and no network access. Fonts ship in `fonts/` (Cormorant Garamond and Karla, both under the SIL Open Font License).
 
-## The Scene
+## Time of day
 
-The entire background is a hand-built SVG painting in the style of a risograph print: an enormous stippled moon with a rotating Art Deco sunburst, pink-to-violet mountain ridges, leaning pines, scattered brush, film grain, and glitchy horizontal dither bands. The whole palette repaints itself four times a day:
+The painting, the bell scale, the wildlife, the suggested pattern and the daily thought all change four times a day.
 
-| Period | Hours | Mood | Suggested practice |
+| Period | Hours | Scene | Suggested pattern |
 |---|---|---|---|
-| Dawn Awakening | 5–9 | warm sand & rose | Energize |
-| Midday Clarity | 9–17 | coastal blue | Focus |
-| El Segundo Golden Hour | 17–21 | ember & violet | Calm |
-| Night Reflection | 21–5 | deep indigo | Sleep |
+| First light | 5–9 | Rose and apricot sky, blue butterflies | Energize |
+| Midday | 9–17 | Coastal blue sky, faint daytime moon | Focus |
+| Golden hour | 17–21 | Violet to ember sky, first fireflies | Calm |
+| Night | 21–5 | Ultramarine sky, stars, fireflies | Sleep |
 
-## Breathing Practices
+## Breathing patterns
 
-Tap the moon (or press **Space**) to begin. A golden progress arc traces each phase; chimes mark transitions.
-
-- **Calm** 4·7·8 — deep release
-- **Box** 4·4·4·4 — steady mind
-- **Energize** 2·1·4 — morning fire
-- **Focus** 5·2·5·2 — sharp clarity
-- **Sleep** 4·8·8 — soft descent
-- **Coastline** 5.5·5.5 — resonance breathing at tide rhythm
+Calm 4·7·8 · Box 4·4·4·4 · Energize 2·1·4 · Focus 5·2·5·2 · Sleep 4·8·8 · Coastline 5.5·5.5. Tap the moon or press Space to start.
 
 ## Features
 
-- **Abundance Ledger** — a money counter that only ever ascends. It drips passively, accelerates while you practice, pays $0.17 per completed cycle, and celebrates milestones with increasingly smug affirmations.
-- **Release Ritual** — write what weighs on you and watch it dissolve, letter by letter, up into the moon. Nothing is ever stored. (You do earn $0.33 of emotional dividends.)
-- **Cosmic Journey** — earn stars every 3 cycles and connect them into constellations: The Seeker → The Dreamer → The Creator → The Sage → The Luminary. Daily streak included.
-- **Harmony Index** — a live coherence waveform that breathes with you and scores your session 0–100.
-- **Daily Wisdom** — clever affirmations tuned to the time of day.
-- **Moon Chime Garden** — seven brass rods synthesized as real bells (six partials including a sub-octave hum, a slow shimmer on the octave, velocity-sensitive brightness, a mallet-noise strike, a warm lowpass-filtered convolution hall, and a gentle bus compressor so overlapping bells bloom instead of clipping). Strike a rod, drag across them to strum, or *Let the Breeze Play* — a wind model with real calm spells and gusts that wanders the scale melodically and leans on your exhale. The rods retune to a different scale each period of the day: E major pentatonic at dawn, G major pentatonic at midday, D dorian at golden hour, A hirajoshi at night.
-- **Sound** — phase chimes (♪) now ring through the same bell voice, pitched from the current hour's scale, plus an optional low ambient drone (≋). No audio files; everything is synthesized.
+- **Abundance.** A money counter that only goes up: a slow drip that speeds up while you practice, $0.17 per breath cycle, and milestone messages.
+- **Field guide to the dunes.** Every three breaths you spot a real local species, starting with the endangered El Segundo blue butterfly and the seacliff buckwheat it depends on.
+- **Wind chimes in the pines.** Seven synthesized brass bells on a pine bough. Strike them, drag to strum, or let the breeze play them. The breeze blows harder while you breathe out.
+- **Soundscape.** Synthesized surf, plus songbirds by day and crickets after dark. No audio files are used.
+- **Give it to the wind.** Type what's weighing on you and the letters blow away like seeds. Nothing is saved.
+- **Tide of coherence.** A tide line that rises as your session goes on.
+- **Paint your own sky.** Each time of day has a ready-made prompt for ChatGPT's image generator. Drop the resulting picture onto the sky, or pick it from the page, and it replaces the painted scene for that time of day. Images are saved only in your browser.
 
-## Persistence
-
-Streaks, stars, daily breath counts, and the ledger live in `localStorage` and survive reloads. Release Ritual text is deliberately never persisted.
-
----
-
-*breathe in gold · exhale everything else*
+Your streak, species, ledger and custom skies are stored in `localStorage`.
