@@ -309,9 +309,13 @@ footer { text-align:center; padding:0 20px 48px; font-family:var(--serif); font-
    SERENITY v5 · the landscape breathes with you
    ═══════════════════════════════════════════════════════════ */
 const $ = id => document.getElementById(id);
+/* keys are namespaced because this page shares an origin with other rooms;
+   the old un-prefixed keys are still read so earlier progress carries over */
+const NS = 'serenity:';
 const store = {
-    get:(k,d)=>{ try{ const v=localStorage.getItem(k); return v===null?d:JSON.parse(v);}catch(e){return d;} },
-    set:(k,v)=>{ try{ localStorage.setItem(k,JSON.stringify(v)); return true; }catch(e){ return false; } }
+    get:(k,d)=>{ try{ let v = localStorage.getItem(NS+k); if (v===null) v = localStorage.getItem(k); return v===null?d:JSON.parse(v);}catch(e){return d;} },
+    set:(k,v)=>{ try{ localStorage.setItem(NS+k,JSON.stringify(v)); return true; }catch(e){ return false; } },
+    remove:(k)=>{ try{ localStorage.removeItem(NS+k); localStorage.removeItem(k); }catch(e){} }
 };
 const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -971,16 +975,25 @@ function buildPrompts(){
             <div class="promptActions">
                 <button class="btnLine" data-copy="${p}">Copy prompt</button>
                 <label class="btnLine">Use an image<input type="file" accept="image/*" data-file="${p}"></label>
-                ${has ? `<button class="btnLine" data-clear="${p}">Back to painted sky</button>` : ''}
+                ${has ? `<button class="btnLine" data-clear="${p}">Remove my painting</button>` : ''}
             </div>
             <span class="promptState">${has ? 'Your painting is in use.' : ''}</span>
         </article>`;
     }).join('');
 }
+/* A sky saved in this browser wins; otherwise a bundled skies/<period>.webp
+   if one ships next to the page; otherwise the painted scene. */
 function loadPhoto(){
-    const src = store.get(sceneKey(period()), null);
-    if (!src){ photo = null; resize(); return; }
-    const img = new Image(); img.onload = ()=>{ photo = img; resize(); }; img.onerror = ()=>{ photo = null; resize(); }; img.src = src;
+    const p = period(), saved = store.get(sceneKey(p), null);
+    const tryLoad = (src, fallback)=>{
+        const img = new Image();
+        img.onload = ()=>{ if (period()===p){ photo = img; resize(); } };
+        img.onerror = fallback;
+        img.src = src;
+    };
+    const painted = ()=>{ photo = null; resize(); };
+    if (saved) tryLoad(saved, ()=> tryLoad('skies/' + p + '.webp', painted));
+    else tryLoad('skies/' + p + '.webp', painted);
 }
 function acceptImage(file, p){
     if (!file || !file.type.startsWith('image/')){ toast('That file isn\'t an image. Try a PNG, JPG or WebP.'); return; }
@@ -1004,7 +1017,7 @@ $('prompts').addEventListener('click', async e=>{
     if (c){ const text = PROMPT_BASE + ' ' + PROMPTS[c.dataset.copy].extra;
         try { await navigator.clipboard.writeText(text); toast('Prompt copied. Paste it into ChatGPT.'); }
         catch(err){ const box = $('promptFull'); box.hidden = false; box.value = text; box.focus(); box.select(); toast('Your browser blocked copying. The prompt is selected below; copy it with your keyboard.'); } }
-    if (x){ try { localStorage.removeItem(sceneKey(x.dataset.clear)); } catch(err){} buildPrompts(); if (x.dataset.clear === period()) loadPhoto(); toast('Back to the painted sky.'); }
+    if (x){ store.remove(sceneKey(x.dataset.clear)); buildPrompts(); if (x.dataset.clear === period()) loadPhoto(); toast('Your painting is removed.'); }
 });
 $('prompts').addEventListener('change', e=>{ const f = e.target.closest('[data-file]'); if (f) acceptImage(f.files[0], f.dataset.file); });
 const hero = $('hero');

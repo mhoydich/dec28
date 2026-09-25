@@ -29,4 +29,4 @@ Calm 4·7·8 · Box 4·4·4·4 · Energize 2·1·4 · Focus 5·2·5·2 · Sleep 
 - **Tide of coherence.** A tide line that rises as your session goes on.
 - **Paint your own sky.** Each time of day has a ready-made prompt for ChatGPT's image generator. Drop the resulting picture onto the sky, or pick it from the page, and it replaces the painted scene for that time of day. Images are saved only in your browser.
 
-Your streak, species, ledger and custom skies are stored in `localStorage`.
+Your streak, species, ledger and custom skies are stored in `localStorage` under keys prefixed `serenity:`. If a `skies/<period>.webp` file sits next to the page (`dawn`, `day`, `dusk`, `night`), it becomes the default sky for that time of day.
